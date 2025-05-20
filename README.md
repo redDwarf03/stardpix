@@ -107,11 +107,13 @@ Detailed steps for running the deployment script are covered in the "Deployment 
 
 The Flutter application interacts with the deployed StarkNet smart contracts through a set of Dart service classes. These services encapsulate the logic for calling contract functions, handling data conversion, and managing transactions. They rely on the `starknet.dart` SDK and use the configuration (contract addresses, account details, RPC URL) loaded from the `.env` file.
 
+A utility mixin, `ContractDataUtilsMixin` (located in `lib/application/services/utils/contract_data_utils.dart`), provides common helper functions used across these services, such as `getSelectorByName`, `feltToBigInt`, `bigIntToFelt`, and `waitForAcceptance`. This promotes code reuse and consistency.
+
 ### 1. `PixelWarService.dart`
 
 This service is responsible for all interactions with the `PixelWar` smart contract.
 
-*   **Location**: `lib/application/contracts/war_service.dart`
+*   **Location**: `lib/application/services/war_service.dart`
 *   **Initialization**:
     *   The `PixelWarService.defaultConfig()` factory constructor reads necessary details like `PIXELWAR_CONTRACT_ADDRESS`, `ACCOUNT_ADDRESS`, `STARKNET_PRIVATE_KEY`, `RPC_URL`, and `PIX_TOKEN_CONTRACT_ADDRESS` from the `.env` file.
     *   It sets up the `JsonRpcProvider` and the `Account` for interacting with the StarkNet, and stores the `PixToken` contract address.
@@ -130,13 +132,20 @@ This service is responsible for all interactions with the `PixelWar` smart contr
 
 This service manages interactions with the `Dpixou` smart contract, which handles the exchange of `FRI` tokens for `PIX` tokens.
 
-*   **Location**: `lib/application/contracts/dpixou_service.dart`
+*   **Location**: `lib/application/services/dpixou_service.dart`
 *   **Initialization**:
     *   Similar to `PixelWarService`, `DpixouService.defaultConfig()` loads `DPIXOU_CONTRACT_ADDRESS` and other necessary details from the `.env` file.
 *   **Key Functionalities**:
-    *   `Future<Result<void, Failure>> buyPix(BigInt amountFri)`: Calls the `buy_pix` external function on the `Dpixou` contract. This allows a user to spend a specified `amountFri` (of FRI tokens) to receive a corresponding amount of PIX tokens. The service handles the transaction execution and waits for its acceptance.
+    *   `Future<Result<void, Failure>> buyPix(BigInt amountFri)`:
+        *   First, it calls an internal helper `_approveFri` to approve the `Dpixou` contract to spend the required `amountFri` from the user's FRI token balance. This involves an `approve` call to the FRI token contract.
+        *   After successful approval, it calls the `buy_pix` external function on the `Dpixou` contract.
+        *   The service prepares these two calls (`approve` and `buy_pix`) as a list of `FunctionCall` objects and executes them as a single multi-call transaction using `account.execute`.
+        *   It handles the transaction execution and waits for its acceptance.
+    *   `Future<EstimateFeeResponse> estimateBuyPixFee(BigInt amountFri)`:
+        *   Prepares the same list of `FunctionCall` objects (for `approve` FRI and `buy_pix`) as the `buyPix` method.
+        *   Calls `account.estimateFee` (or a similar method on the `Account` object from `starknet.dart`) to estimate the network fees for executing these calls.
+        *   Returns the fee estimation, allowing the UI to display potential transaction costs to the user.
     *   `Future<BigInt> getNbPixForFri(BigInt amountFri)`: Calls the `get_nb_pix_for_fri` view function to calculate how many PIX tokens would be received for a given `amountFri`.
-    *   `Future<BigInt> getNbFriForPix(BigInt amountPix)`: Calls the `get_nb_fri_for_pix` view function to calculate how many FRI tokens are required to obtain a given `amountPix`.
 
 These services provide a clean abstraction layer, making it easier for the Flutter UI and application logic to interact with the StarkNet backend without dealing directly with the low-level details of contract calls and data serialization.
 
