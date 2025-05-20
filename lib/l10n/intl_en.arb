@@ -1,0 +1,14 @@
+{
+    "@@last_modified": "2021-12-07T12:33:16.270871",
+    "confirmationPopupTitle": "Confirmation Request",
+    "connectionWalletDisconnectWarning": "Are you sure you want to disconnect your wallet?",
+    "changeCurrentAccountWarning": "Warning, your current account has been updated.",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "Ok",
+    "connectionWalletDisconnect": "Disconnect wallet",
+    "btn_connect_wallet": "Connect wallet",
+    "connectToAddPixelWarning": "Please, connect your wallet to add a pixel",
+    "btn_buy_token": "Buy Pix tokens",
+    "waitForTimer": "You must wait until the end of the counter before dropping in a new pixel."
+}
