@@ -1,0 +1,47 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace = "io.reddwarf03.stardpix"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = "27.0.12077973"
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_19
+        targetCompatibility = JavaVersion.VERSION_19
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_19
+    }
+
+    defaultConfig {
+        applicationId = "io.reddwarf03.stardpix"
+        // You can update the following values to match your application needs.
+        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        minSdk = 28
+        targetSdk = 35
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug
+            proguardFiles 'proguard-rules.pro'
+        }
+    }
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/LICENSE.txt', 'META-INF/NOTICE.txt', 'META-INF/LICENSE', 'META-INF/NOTICE']
+            pickFirsts += ['META-INF/atomicfu.kotlin_module', 'META-INF/proguard/coroutines.pro']
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}

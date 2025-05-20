@@ -226,7 +226,7 @@ In another terminal window, from the root of your `starDPix` project:
     This script will:
     *   Declare and deploy the `PixToken`, `FRI Token` (another instance of PixToken), `Dpixou`, and `PixelWar` contracts to your local devnet.
     *   Display the deployed contract addresses in the terminal.
-    *   Create/update a `.env` file in `lib/application/contracts/.env` with these addresses and other necessary configuration (RPC URL, account address, private key).
+    *   Create/update a `.env` file located at `lib/application/contracts/.env` with these addresses and other necessary configuration (RPC URL, account address, private key).
     *   **Important for ETH Balance**: Ensure this script (or you manually) adds the `ETH_TOKEN_CONTRACT_ADDRESS` for your StarkNet network to the `.env` file. This address is required for the application to display the user's ETH balance, which is used for transaction fees.
 
 ### 4. Configure Flutter Environment
@@ -272,6 +272,55 @@ flutter run
 ```
 
 The application services (`PixelWarService`, `DpixouService`, and the balance provider) should now use the contract addresses and configuration from the `.env` file, allowing them to interact with your locally deployed contracts.
+
+### Testing on a Physical Device
+
+If you want to run and test the Flutter application on a physical Android device (connected via USB) while your StarkNet devnet is running on your computer, you'll need to make a few adjustments:
+
+1.  **Find Your Computer's Local IP Address:**
+    Your phone needs to connect to your computer over the local network.
+    *   On **macOS**, you can typically find this by opening a terminal and running `ipconfig getifaddr en0` (for Wi-Fi) or `ipconfig getifaddr en1` (for Ethernet).
+    *   On **Linux**, use `hostname -I` or `ip addr show`.
+    *   On **Windows**, use `ipconfig` in the Command Prompt and look for the "IPv4 Address" of your active network connection.
+    Let's assume your computer's local IP is `192.168.1.X`.
+
+2.  **Ensure StarkNet Devnet is Accessible:**
+    Before running the deployment script, ensure your `starknet-devnet` is started and configured to be accessible from your physical device. Stop any current devnet instance (Ctrl+C) and restart it with the `--host 0.0.0.0` flag:
+    ```bash
+    starknet-devnet --seed 0 --port 5050 --host 0.0.0.0
+    ```
+    Keep this devnet terminal running.
+
+3.  **Configure `RPC_URL` in Deployment Script:**
+    The `scripts/deploy_sc.sh` script defines the `RPC_URL` that will be used for deployment and written into the `lib/application/contracts/.env` file (which the Flutter app uses).
+    *   Open the `scripts/deploy_sc.sh` file.
+    *   Locate the line: `export RPC_URL="http://192.168.1.55:5050"` (or similar).
+    *   **For physical device testing:** Ensure this IP address matches your computer's local IP address found in step 1. For example, if your IP is `192.168.1.100`, change the line to:
+        ```bash
+        export RPC_URL="http://192.168.1.100:5050"
+        ```
+    *   **For emulator testing or general local development:** You would typically set this to:
+        ```bash
+        export RPC_URL="http://localhost:5050"
+        ```
+
+4.  **Run the Deployment Script:**
+    After configuring the `RPC_URL` in `deploy_sc.sh` and ensuring your devnet is running correctly, execute the script from the project root:
+    ```bash
+    ./scripts/deploy_sc.sh
+    ```
+    This will deploy/re-deploy the contracts and generate/update the `lib/application/contracts/.env` file with the `RPC_URL` you specified.
+
+5.  **Rebuild and Run the Flutter App:**
+    After the deployment script completes, ensure your physical device is connected, and then rebuild and run your Flutter app:
+    ```bash
+    flutter run
+    ```
+    The app should now use the `RPC_URL` from the `.env` file (which was set by `deploy_sc.sh`) and connect to the StarkNet devnet running on your computer.
+
+**Important:**
+*   Ensure your computer and your physical Android device are connected to the **same local network** (e.g., the same Wi-Fi).
+*   Your computer's firewall might need to be configured to allow incoming connections on port `5050` (or whichever port your devnet is using).
 
 ### 6. Testing with CLI (`scripts/create_example.sh`)
 

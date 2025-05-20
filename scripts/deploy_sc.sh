@@ -2,7 +2,7 @@ cd lib/application/contracts/
 
 export STARKNET_PRIVATE_KEY="0x71d7bb07b9a64f6f78ac4c816aff4da9" 
 export ACCOUNT_ADDRESS="0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691"
-export RPC_URL="http://localhost:5050"
+export RPC_URL="http://192.168.1.55:5050"
 export ACCOUNT_FILE="devnet-acct.json"
 
 starkli declare --watch --rpc "$RPC_URL" --account "$ACCOUNT_FILE"  target/dev/contract_PixToken.contract_class.json
