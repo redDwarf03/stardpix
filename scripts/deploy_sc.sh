@@ -85,6 +85,7 @@ echo "ETH_TOKEN_CONTRACT_ADDRESS=0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c7
 # Write account and RPC details from existing script variables
 echo "ACCOUNT_ADDRESS=$ACCOUNT_ADDRESS" >> "$ENV_FILE"
 echo "STARKNET_PRIVATE_KEY=$STARKNET_PRIVATE_KEY" >> "$ENV_FILE"
+echo "ACCOUNT_CLASS_HASH=0x061dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f" >> "$ENV_FILE"
 echo "RPC_URL=$RPC_URL" >> "$ENV_FILE"
 
 echo ".env file created at $(pwd)/$ENV_FILE"

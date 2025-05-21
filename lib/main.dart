@@ -6,12 +6,21 @@ import 'package:flutter_gen/gen_l10n/localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:stardpix/ui/views/layer/layouts/main_screen.dart';
 import 'package:stardpix/util/generic/providers_observer.dart';
+import 'package:wallet_kit/wallet_kit.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: 'lib/application/contracts/.env');
+
+  await WalletKit().init(
+    accountClassHash: dotenv.env['ACCOUNT_CLASS_HASH']!,
+    rpc: dotenv.env['RPC_URL']!,
+  );
+
+  await Hive.initFlutter();
 
   runApp(
     ProviderScope(
