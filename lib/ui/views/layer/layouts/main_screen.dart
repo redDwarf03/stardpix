@@ -62,7 +62,7 @@ class MainScreenState extends ConsumerState<MainScreen> {
 
         await ref
             .read(LayerFormProvider.layerForm.notifier)
-            .getTimeLockInSeconds();
+            .getTimeLockInSeconds(context);
       }
     });
 

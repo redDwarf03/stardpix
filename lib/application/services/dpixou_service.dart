@@ -14,26 +14,34 @@ class DpixouService with ContractDataUtilsMixin {
   DpixouService({
     required this.provider,
     required String contractAddressStr,
-    required String accountAddress,
+    String? accountAddress,
     required String privateKey,
     required String friTokenAddressStr,
   })  : contractAddress = Felt.fromHexString(contractAddressStr),
-        account = getAccount(
-          accountAddress: Felt.fromHexString(accountAddress),
-          privateKey: Felt.fromHexString(privateKey),
-          nodeUri: provider.nodeUri,
-        ),
+        account = accountAddress == null || accountAddress.isEmpty
+            ? null
+            : getAccount(
+                accountAddress: Felt.fromHexString(accountAddress),
+                privateKey: Felt.fromHexString(privateKey),
+                nodeUri: provider.nodeUri,
+              ),
+        friTokenAddress = Felt.fromHexString(friTokenAddressStr);
+
+  DpixouService.fromAccount({
+    required this.provider,
+    required String contractAddressStr,
+    required this.account,
+    required String friTokenAddressStr,
+  })  : contractAddress = Felt.fromHexString(contractAddressStr),
         friTokenAddress = Felt.fromHexString(friTokenAddressStr);
 
   factory DpixouService.defaultConfig() {
     final contractAddressStr = dotenv.env['DPIXOU_CONTRACT_ADDRESS'];
-    final accountAddressStr = dotenv.env['ACCOUNT_ADDRESS'];
     final privateKeyStr = dotenv.env['STARKNET_PRIVATE_KEY'];
     final rpcUrlStr = dotenv.env['RPC_URL'];
     final friTokenAddressStr = dotenv.env['FRI_TOKEN_CONTRACT_ADDRESS'];
 
     if (contractAddressStr == null ||
-        accountAddressStr == null ||
         privateKeyStr == null ||
         rpcUrlStr == null ||
         friTokenAddressStr == null) {
@@ -43,7 +51,6 @@ class DpixouService with ContractDataUtilsMixin {
     return DpixouService(
       provider: JsonRpcProvider(nodeUri: Uri.parse(rpcUrlStr)),
       contractAddressStr: contractAddressStr,
-      accountAddress: accountAddressStr,
       privateKey: privateKeyStr,
       friTokenAddressStr: friTokenAddressStr,
     );
@@ -51,19 +58,22 @@ class DpixouService with ContractDataUtilsMixin {
   final Logger logger = Logger('DpixouService');
   final JsonRpcProvider provider;
   final Felt contractAddress;
-  final Account account;
+  final Account? account;
   final Felt friTokenAddress;
 
   /// Buys PIX tokens with FRI tokens.
   /// Corresponds to the `buy_pix` function in dpixou.cairo.
   /// This function now handles both approval and the buy_pix call.
   Future<Result<void, Failure>> buyPix(BigInt amountFri) async {
+    if (account == null) {
+      throw Exception('No account connected (wallet).');
+    }
     logger
       ..info(
         '[DpixouService] Attempting buyPix with amountFri: $amountFri (raw BigInt)',
       )
       ..info(
-        '[DpixouService] Account address: ${account.accountAddress.toHexString()}',
+        '[DpixouService] Account address: ${account!.accountAddress.toHexString()}',
       )
       ..info(
         '[DpixouService] Dpixou contract: ${contractAddress.toHexString()}',
@@ -117,8 +127,10 @@ class DpixouService with ContractDataUtilsMixin {
               '    Calldata: ${calls[i].calldata.map((f) => f.toHexString()).toList()}',
             );
         }
-
-        final response = await account.execute(functionCalls: calls);
+        logger.info(
+          '[DpixouService] Account provider nodeUri before execute: ${(account!.provider as JsonRpcProvider).nodeUri}',
+        );
+        final response = await account!.execute(functionCalls: calls);
         logger.info(
           '[DpixouService] account.execute response: $response',
         );
@@ -152,14 +164,15 @@ class DpixouService with ContractDataUtilsMixin {
           '[DpixouService] Transaction accepted.',
         );
         return;
-      } catch (e) {
+      } catch (e, stack) {
         logger.severe(
-          '[DpixouService] Error in buyPix (outer catch): $e',
+          '[DpixouService] Error in buyPix (outer catch): $e\n$stack',
         );
         if (e is Exception &&
             e.toString().contains('Failed to execute buy PIX transaction')) {
           rethrow;
         }
+        // Propager le message d'erreur dans Failure.other
         throw Exception('Failed to buy PIX: $e');
       }
     });
@@ -212,7 +225,7 @@ class DpixouService with ContractDataUtilsMixin {
       logger.info(
         '[DpixouService] Estimating fee with calls: approve then buy_pix',
       );
-      final feeEstimation = await account.getEstimateMaxFeeForInvokeTx(
+      final feeEstimation = await account!.getEstimateMaxFeeForInvokeTx(
         functionCalls: calls,
       );
 

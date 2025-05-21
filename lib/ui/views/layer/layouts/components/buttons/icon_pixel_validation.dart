@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pixelarticons/pixel.dart' as pixelarticons;
 import 'package:stardpix/application/balance.dart';
 import 'package:stardpix/application/pixels.dart';
 import 'package:stardpix/application/pixels_canvas.dart';
 import 'package:stardpix/application/services/war_service.dart';
+import 'package:stardpix/application/session/provider.dart';
 import 'package:stardpix/ui/views/layer/bloc/provider.dart';
+import 'package:starknet_provider/starknet_provider.dart';
 
 class IconPixelValidation extends ConsumerWidget {
   const IconPixelValidation({
@@ -30,7 +33,42 @@ class IconPixelValidation extends ConsumerWidget {
                 .read(LayerFormProvider.layerForm.notifier)
                 .setCreateInProgress(true);
 
-            final result = await PixelWarService.defaultConfig().addPixels(
+            final accountAsync =
+                await ref.read(accountStarknetProvider(context).future);
+            if (accountAsync == null) {
+              return;
+            }
+
+            // Get the .env infos for the contract addresses
+            const contractAddressStr =
+                String.fromEnvironment('PIXELWAR_CONTRACT_ADDRESS');
+            const pixTokenAddressStr =
+                String.fromEnvironment('PIX_TOKEN_CONTRACT_ADDRESS');
+            const rpcUrlStr = String.fromEnvironment('RPC_URL');
+
+            // Fallback if String.fromEnvironment doesn't work (dev)
+            final env = dotenv.env;
+            final contractAddress = contractAddressStr.isNotEmpty
+                ? contractAddressStr
+                : env['PIXELWAR_CONTRACT_ADDRESS'] ?? '';
+            final pixTokenAddress = pixTokenAddressStr.isNotEmpty
+                ? pixTokenAddressStr
+                : env['PIX_TOKEN_CONTRACT_ADDRESS'] ?? '';
+            final rpcUrl =
+                rpcUrlStr.isNotEmpty ? rpcUrlStr : env['RPC_URL'] ?? '';
+
+            if (contractAddress.isEmpty ||
+                pixTokenAddress.isEmpty ||
+                rpcUrl.isEmpty) {
+              return;
+            }
+
+            final result = await PixelWarService.fromAccount(
+              provider: JsonRpcProvider(nodeUri: Uri.parse(rpcUrl)),
+              contractAddressStr: contractAddress,
+              account: accountAsync,
+              pixTokenAddress: pixTokenAddress,
+            ).addPixels(
               layer.pendingPixels,
             );
 
@@ -47,7 +85,7 @@ class IconPixelValidation extends ConsumerWidget {
 
                 await ref
                     .read(LayerFormProvider.layerForm.notifier)
-                    .getTimeLockInSeconds();
+                    .getTimeLockInSeconds(context);
               },
               failure: (failure) {
                 ScaffoldMessenger.of(context).showSnackBar(

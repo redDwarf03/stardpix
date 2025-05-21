@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stardpix/application/balance.dart';
 import 'package:stardpix/application/pixels_canvas.dart';
@@ -6,6 +7,7 @@ import 'package:stardpix/application/services/war_service.dart';
 import 'package:stardpix/application/session/provider.dart';
 import 'package:stardpix/model/pixel.dart';
 import 'package:stardpix/ui/views/layer/bloc/state.dart';
+import 'package:starknet_provider/starknet_provider.dart';
 
 final _layerFormProvider =
     NotifierProvider.autoDispose<LayerFormNotifier, LayerFormState>(
@@ -208,14 +210,51 @@ class LayerFormNotifier extends AutoDisposeNotifier<LayerFormState> {
     state = state.copyWith(zoomLevel: zoomLevel);
   }
 
-  Future<void> getTimeLockInSeconds() async {
+  Future<void> getTimeLockInSeconds(
+    BuildContext context,
+  ) async {
     var timeLockInSeconds = 0;
     final accountAddress = ref.read(accountAddressProvider);
     if (accountAddress.isEmpty) {
       setTimeLockInSeconds(0);
       return;
     }
-    final unlockTime = await PixelWarService.defaultConfig().getUnlockTime(
+
+    final accountAsync =
+        await ref.read(accountStarknetProvider(context).future);
+    if (accountAsync == null) {
+      return;
+    }
+
+    // Get the .env infos for the contract addresses
+    const contractAddressStr =
+        String.fromEnvironment('PIXELWAR_CONTRACT_ADDRESS');
+    const pixTokenAddressStr =
+        String.fromEnvironment('PIX_TOKEN_CONTRACT_ADDRESS');
+    const rpcUrlStr = String.fromEnvironment('RPC_URL');
+
+    // Fallback if String.fromEnvironment doesn't work (dev)
+    final env = dotenv.env;
+    final contractAddress = contractAddressStr.isNotEmpty
+        ? contractAddressStr
+        : env['PIXELWAR_CONTRACT_ADDRESS'] ?? '';
+    final pixTokenAddress = pixTokenAddressStr.isNotEmpty
+        ? pixTokenAddressStr
+        : env['PIX_TOKEN_CONTRACT_ADDRESS'] ?? '';
+    final rpcUrl = rpcUrlStr.isNotEmpty ? rpcUrlStr : env['RPC_URL'] ?? '';
+
+    if (contractAddress.isEmpty ||
+        pixTokenAddressStr.isEmpty ||
+        rpcUrl.isEmpty) {
+      return;
+    }
+
+    final unlockTime = await PixelWarService.fromAccount(
+      provider: JsonRpcProvider(nodeUri: Uri.parse(rpcUrl)),
+      contractAddressStr: contractAddress,
+      account: accountAsync,
+      pixTokenAddress: pixTokenAddress,
+    ).getUnlockTime(
       accountAddress,
     );
 

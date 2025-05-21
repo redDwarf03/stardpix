@@ -100,9 +100,102 @@ This script performs the following actions:
     *   `PixelWar`: Deploys the main game contract, providing it with the address of the deployed `PixToken` contract for pixel payment processing.
 3.  **Transfers `PixToken` Admin Rights**: The script then calls the `change_admin` function on the deployed `PixToken` contract to transfer the administrative (minting) rights to the deployed `Dpixou` contract address. This ensures that only `Dpixou` can mint new `PIX` tokens.
 4.  **Outputs** the addresses of all deployed contracts to the terminal.
-5.  **Creates/Updates** an `.env` file located at `lib/application/contracts/.env`. This file stores the deployed contract addresses and other essential configuration details like the RPC URL, account address, and private key, which are then used by the Flutter application to interact with the contracts.
+5.  **Creates/Updates** an `.env` file located at `lib/application/contracts/.env`. This file stores the deployed contract addresses and other essential configuration details. **Crucially, the `RPC_URL` in this `.env` file is the primary source of truth for the Flutter application to connect to the StarkNet network.** Account details (address and private key for the devnet deployer) are also stored here.
 
 Detailed steps for running the deployment script are covered in the "Deployment and Setup" section.
+
+## Wallet Lifecycle & Integration (wallet_kit & starknet_provider)
+
+starDPix uses [wallet_kit](https://pub.dev/packages/wallet_kit) to manage the full lifecycle of user wallets and accounts, and [starknet_provider](https://pub.dev/packages/starknet_provider) for blockchain interactions. The RPC endpoint used by `wallet_kit` for creating `Account` objects for transactions is configured during `WalletKit().init()` in `main.dart`, using the `RPC_URL` from the `lib/application/contracts/.env` file.
+
+### Wallet Lifecycle Management
+
+- **wallet_kit** provides all UI and logic for:
+  - Creating a new Starknet wallet (OpenZeppelin, Argent, Braavos, etc.)
+  - Importing an existing wallet (via seed phrase)
+  - Managing multiple wallets/accounts, with secure storage (password or OS keychain)
+  - Selecting the active account, and handling on-chain deployment if needed
+  - Prompting for password when required (for password-protected wallets)
+- The app uses wallet_kit's Riverpod providers to track:
+  - Connection state (`isConnectedProvider`)
+  - Current account address (`accountAddressProvider`)
+  - The full Starknet account object (`accountStarknetProvider(context).future`) for signing transactions
+
+### Blockchain Interaction
+
+- All contract calls (buy PIX, place pixels, etc.) are signed and sent using the currently selected wallet/account from wallet_kit.
+- The app uses [starknet_provider](https://pub.dev/packages/starknet_provider) and [starknet.dart](https://pub.dev/packages/starknet) for all Starknet JSON-RPC interactions.
+- When a transaction requires a signature, wallet_kit will prompt the user for their password if the wallet is protected.
+
+### User Flow Example
+
+1. **On App Launch:**  
+   - The canvas and game info are displayed.
+   - The wallet button opens a popup (wallet_kit UI) to view, create, or import a wallet/account.
+
+2. **Wallet Actions:**  
+   - The user can create a new wallet, import an existing one, or select a previously created account.
+   - If the wallet is password-protected, wallet_kit will prompt for the password when needed.
+
+3. **Buying PIX:**  
+   - The user clicks "Buy PIX", enters the amount, and confirms.
+   - The transaction is signed with the selected wallet/account (password prompt if needed).
+   - On success, balances are updated reactively.
+
+4. **Gameplay:**  
+   - All game actions (placing pixels, etc.) use the selected wallet/account for contract calls and signatures.
+
+### Technical Notes
+
+- The app never stores or manages private keys directly; all sensitive operations are delegated to wallet_kit and secure_store.
+- All Riverpod providers for session/account state are derived from wallet_kit's state, ensuring a single source of truth. The `accountStarknetProvider` in `lib/application/session/provider.dart` has been specifically configured to ensure it uses the RPC settings provided during `WalletKit().init()`.
+- The integration is compatible with both local devnet and public Starknet networks, provided the `RPC_URL` in the `.env` file is set accordingly.
+
+## Advanced SecureStore Management and Application Lifecycle
+
+Recent changes have been implemented to optimize and secure the management of `SecureStore` (used by `wallet_kit` to store sensitive wallet information).
+
+### SecureStore Caching with `secureStoreProvider`
+
+To avoid repeated and potentially costly calls (which may include user prompts) to retrieve the `SecureStore`, a new Riverpod provider has been introduced:
+
+-   `secureStoreProvider`: This is a `FutureProvider.family` that takes a `SecureStoreRequestArgs` object (containing the `BuildContext` and `walletId`) as an argument. This provider retrieves the `SecureStore` and caches it. Subsequent calls with the same `SecureStoreRequestArgs` will return the cached instance, improving performance and user experience.
+
+The `accountStarknetProvider` has been refactored to use `secureStoreProvider` to obtain the `SecureStore` necessary for creating a StarkNet account instance.
+
+### SecureStore Cache Invalidation and Lifecycle Management
+
+For security and resource management reasons, the `SecureStore` cache is automatically invalidated when the application is no longer in the foreground.
+
+-   `AppLifecycleNotifier`: A Riverpod `Notifier` that implements `WidgetsBindingObserver` has been created to monitor the application lifecycle states.
+-   When the application enters a `paused` state (goes to the background) or `detached` state (about to be destroyed), `AppLifecycleNotifier` invalidates `secureStoreProvider`. This effectively removes all cached `SecureStore` instances from memory.
+
+### Required Initialization
+
+For `AppLifecycleNotifier` to function and invalidate the cache, its provider, `appLifecycleNotifierProvider`, **must be initialized** when the application starts. This is typically done by reading or watching the provider in the root widget of the application (e.g., in the `build` method of your main `MyApp` widget):
+
+```dart
+// In your root widget (e.g., main.dart or app.dart)
+class MyApp extends ConsumerWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Initialize the application lifecycle observer.
+    ref.watch(appLifecycleNotifierProvider);
+    // Note: accountStarknetProvider now takes BuildContext directly if needed here or elsewhere.
+    // Example: ref.watch(accountStarknetProvider(context).future);
+
+    return MaterialApp(
+      // ... your MaterialApp configuration
+    );
+  }
+}
+```
+
+These changes ensure more robust and secure management of sensitive wallet data while optimizing performance.
+
+---
 
 ## Flutter Application Services
 
@@ -205,12 +298,18 @@ This will generate the necessary `.contract_class.json` files in the `target/dev
 
 ### 2. Start StarkNet Devnet
 
-Open a new terminal window and start your local StarkNet devnet. The deployment script expects it to be running at `http://localhost:5050`.
+Open a new terminal window and start your local StarkNet devnet.
+**For development and testing, especially when using an emulator or physical device, it's crucial to make the devnet accessible from your local network.**
 
+Start `starknet-devnet` with the `--host` flag set to `0.0.0.0` or your computer's specific local IP address (e.g., `192.168.1.X`):
 ```bash
-starknet-devnet --seed 0 --port 5050
+starknet-devnet --seed 0 --port 5050 --host 0.0.0.0
 ```
-Keep this terminal window running.
+Or, if you know your machine's IP:
+```bash
+starknet-devnet --seed 0 --port 5050 --host YOUR_COMPUTER_IP_ADDRESS
+```
+Keep this terminal window running. The deployment script and Flutter app will connect to this devnet instance.
 
 ### 3. Deploy Contracts & Configure Flutter App
 
@@ -227,7 +326,7 @@ In another terminal window, from the root of your `starDPix` project:
     This script will:
     *   Declare and deploy the `PixToken`, `FRI Token` (another instance of PixToken), `Dpixou`, and `PixelWar` contracts to your local devnet.
     *   Display the deployed contract addresses in the terminal.
-    *   Create/update a `.env` file located at `lib/application/contracts/.env` with these addresses and other necessary configuration (RPC URL, account address, private key).
+    *   Create/update a `.env` file located at `lib/application/contracts/.env`. This file will contain the deployed contract addresses and the `RPC_URL` (e.g., `http://YOUR_COMPUTER_IP_ADDRESS:5050` if you're testing on a device, or `http://localhost:5050` if testing only on the host machine and your devnet is started accordingly).
     *   **Important for ETH Balance**: Ensure this script (or you manually) adds the `ETH_TOKEN_CONTRACT_ADDRESS` for your StarkNet network to the `.env` file. This address is required for the application to display the user's ETH balance, which is used for transaction fees.
 
 ### 4. Configure Flutter Environment
@@ -257,10 +356,22 @@ The Flutter application uses the `.env` file (generated in the previous step) to
 
     Future<void> main() async {
       WidgetsFlutterBinding.ensureInitialized(); // Ensure bindings are initialized
-      // Load the .env file
-      // The path is relative to the project root
-      await dotenv.load(fileName: "lib/application/contracts/.env");
-      runApp(MyApp()); // Replace MyApp with your main app widget
+      // Load the .env file from lib/application/contracts/.env
+      // This .env file contains RPC_URL, contract addresses, etc.
+      await dotenv.load(fileName: "lib/application/contracts/.env"); 
+      
+      // Initialize WalletKit with the RPC_URL from the .env file
+      // This ensures all blockchain interactions via wallet_kit use the correct endpoint.
+      await WalletKit().init(
+        accountClassHash: dotenv.env['ACCOUNT_CLASS_HASH']!, // Ensure ACCOUNT_CLASS_HASH is in your .env
+        rpc: dotenv.env['RPC_URL']!,
+      );
+
+      runApp(
+        ProviderScope( // Wrap with ProviderScope if you use Riverpod
+          child: MyApp(), // Replace MyApp with your main app widget
+        ),
+      );
     }
     ```
 
@@ -276,7 +387,7 @@ The application services (`PixelWarService`, `DpixouService`, and the balance pr
 
 ### Testing on a Physical Device
 
-If you want to run and test the Flutter application on a physical Android device (connected via USB) while your StarkNet devnet is running on your computer, you'll need to make a few adjustments:
+If you want to run and test the Flutter application on a physical Android device (connected via USB) while your StarkNet devnet is running on your computer, follow these steps carefully:
 
 1.  **Find Your Computer's Local IP Address:**
     Your phone needs to connect to your computer over the local network.
@@ -285,43 +396,42 @@ If you want to run and test the Flutter application on a physical Android device
     *   On **Windows**, use `ipconfig` in the Command Prompt and look for the "IPv4 Address" of your active network connection.
     Let's assume your computer's local IP is `192.168.1.X`.
 
-2.  **Ensure StarkNet Devnet is Accessible:**
-    Before running the deployment script, ensure your `starknet-devnet` is started and configured to be accessible from your physical device. Stop any current devnet instance (Ctrl+C) and restart it with the `--host 0.0.0.0` flag:
+2.  **Ensure StarkNet Devnet is Accessible on Your Network:**
+    As mentioned in "Start StarkNet Devnet" (Step 2 of Deployment and Setup), ensure your `starknet-devnet` is started with `--host 0.0.0.0` or `--host YOUR_COMPUTER_IP_ADDRESS`. For example:
     ```bash
     starknet-devnet --seed 0 --port 5050 --host 0.0.0.0
     ```
     Keep this devnet terminal running.
 
-3.  **Configure `RPC_URL` in Deployment Script:**
-    The `scripts/deploy_sc.sh` script defines the `RPC_URL` that will be used for deployment and written into the `lib/application/contracts/.env` file (which the Flutter app uses).
+3.  **Configure `RPC_URL` in Deployment Script (`scripts/deploy_sc.sh`):**
+    The `scripts/deploy_sc.sh` script defines the `RPC_URL` that will be written into the `lib/application/contracts/.env` file. This `.env` file is then used by the Flutter app.
     *   Open the `scripts/deploy_sc.sh` file.
-    *   Locate the line: `export RPC_URL="http://192.168.1.55:5050"` (or similar).
-    *   **For physical device testing:** Ensure this IP address matches your computer's local IP address found in step 1. For example, if your IP is `192.168.1.100`, change the line to:
+    *   Locate the line similar to `export RPC_URL="http://192.168.1.55:5050"`.
+    *   **Crucially, for physical device testing, this IP address MUST match your computer's local IP address found in step 1.** For example, if your IP is `192.168.1.100`, change the line to:
         ```bash
         export RPC_URL="http://192.168.1.100:5050"
         ```
-    *   **For emulator testing or general local development:** You would typically set this to:
-        ```bash
-        export RPC_URL="http://localhost:5050"
-        ```
+    *   If you are only testing on an emulator that can access `localhost` of the host machine (e.g., Android emulator's special `10.0.2.2` address dificuldades by `localhost` from host), or only on the host, you might use `http://localhost:5050`. However, for consistency and to simplify physical device testing, using your computer's actual local IP is recommended.
 
 4.  **Run the Deployment Script:**
-    After configuring the `RPC_URL` in `deploy_sc.sh` and ensuring your devnet is running correctly, execute the script from the project root:
+    After configuring the `RPC_URL` in `deploy_sc.sh` and ensuring your devnet is running and accessible, execute the script from the project root:
     ```bash
     ./scripts/deploy_sc.sh
     ```
-    This will deploy/re-deploy the contracts and generate/update the `lib/application/contracts/.env` file with the `RPC_URL` you specified.
+    This will deploy/re-deploy the contracts and generate/update the `lib/application/contracts/.env` file with the `RPC_URL` (e.g., `http://YOUR_COMPUTER_IP_ADDRESS:5050`).
 
 5.  **Rebuild and Run the Flutter App:**
-    After the deployment script completes, ensure your physical device is connected, and then rebuild and run your Flutter app:
+    Ensure your `main.dart` loads the `.env` file and initializes `WalletKit` with the `RPC_URL` from this `.env` file (as shown in "Configure Flutter Environment" Step 2).
+    Then, with your physical device connected, rebuild and run your Flutter app:
     ```bash
     flutter run
     ```
-    The app should now use the `RPC_URL` from the `.env` file (which was set by `deploy_sc.sh`) and connect to the StarkNet devnet running on your computer.
+    The app should now connect to the StarkNet devnet running on your computer using the IP address.
 
-**Important:**
+**Important Network Notes:**
 *   Ensure your computer and your physical Android device are connected to the **same local network** (e.g., the same Wi-Fi).
 *   Your computer's firewall might need to be configured to allow incoming connections on port `5050` (or whichever port your devnet is using).
+*   If you encounter persistent connection issues from the device despite correct IP configuration, you can use `adb reverse tcp:LOCAL_PORT tcp:HOST_PORT` as a debugging tool. For example, `adb reverse tcp:5050 tcp:5050` would forward requests from the device's `localhost:5050` to your host machine's `localhost:5050`. However, with the app correctly using the host's IP from the `.env` file, `adb reverse` should generally not be necessary for the primary RPC connection.
 
 ### 6. Testing with CLI (`scripts/create_example.sh`)
 

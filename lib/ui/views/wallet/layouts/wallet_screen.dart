@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:logging/logging.dart';
-import 'package:stardpix/application/session/provider.dart';
 import 'package:stardpix/ui/views/wallet/layouts/components/icon_close.dart';
 import 'package:wallet_kit/wallet_kit.dart';
 
@@ -15,15 +13,6 @@ class WalletScreen extends ConsumerStatefulWidget {
 }
 
 class WalletScreenState extends ConsumerState<WalletScreen> {
-  @override
-  void initState() {
-    super.initState();
-    final logger = Logger('WalletScreenState');
-    final container = ProviderContainer();
-    final accountAddress = container.read(accountAddressProvider);
-    logger.info('Current account (accountAddress): $accountAddress');
-  }
-
   @override
   void dispose() {
     super.dispose();
@@ -54,6 +43,7 @@ class WalletScreenState extends ConsumerState<WalletScreen> {
               ),
               child: Container(
                 width: 600,
+                height: 300,
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.bottomLeft,
@@ -67,6 +57,7 @@ class WalletScreenState extends ConsumerState<WalletScreen> {
                   right: 10,
                 ),
                 child: const Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Column(
                       mainAxisSize: MainAxisSize.min,
@@ -77,10 +68,8 @@ class WalletScreenState extends ConsumerState<WalletScreen> {
                       ],
                     ),
                     SizedBox(height: 10),
-                    WalletBody(),
                     SendEthButton(),
                     WalletErrorHandler(),
-                    SizedBox(height: 10),
                   ],
                 ),
               ),

@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:stardpix/application/balance.dart';
 import 'package:stardpix/application/constants.dart';
 import 'package:stardpix/application/services/dpixou_service.dart';
+import 'package:stardpix/application/session/provider.dart';
 import 'package:stardpix/ui/views/buy_pix/bloc/state.dart';
+import 'package:starknet_provider/starknet_provider.dart';
 
 final _buyTokenFormProvider =
     NotifierProvider.autoDispose<BuyTokenFormNotifier, BuyTokenFormState>(
@@ -24,7 +27,10 @@ class BuyTokenFormNotifier extends AutoDisposeNotifier<BuyTokenFormState> {
     return const BuyTokenFormState();
   }
 
-  Future<void> selectPixAmountAndEstimateFee(int pixAmount) async {
+  Future<void> selectPixAmountAndEstimateFee(
+    BuildContext context,
+    int pixAmount,
+  ) async {
     if (pixAmount <= 0) {
       state = state.copyWith(
         selectedPixAmount: null,
@@ -48,8 +54,51 @@ class BuyTokenFormNotifier extends AutoDisposeNotifier<BuyTokenFormState> {
     );
 
     try {
-      final fee = await DpixouService.defaultConfig()
-          .estimateBuyPixFee(friCostForPixWithDecimals);
+      final selectedAccount =
+          await ref.read(accountStarknetProvider(context).future);
+      if (selectedAccount == null) {
+        state = state.copyWith(
+          estimatedFee: null,
+          error: 'No account connected (wallet).',
+          isLoadingFee: false,
+        );
+        return;
+      }
+
+      // Get the .env infos for the contract addresses
+      const contractAddressStr =
+          String.fromEnvironment('DPIXOU_CONTRACT_ADDRESS');
+      const friTokenAddressStr =
+          String.fromEnvironment('FRI_TOKEN_CONTRACT_ADDRESS');
+      const rpcUrlStr = String.fromEnvironment('RPC_URL');
+
+      // Fallback if String.fromEnvironment doesn't work (dev)
+      final env = dotenv.env;
+      final contractAddress = contractAddressStr.isNotEmpty
+          ? contractAddressStr
+          : env['DPIXOU_CONTRACT_ADDRESS'] ?? '';
+      final friTokenAddress = friTokenAddressStr.isNotEmpty
+          ? friTokenAddressStr
+          : env['FRI_TOKEN_CONTRACT_ADDRESS'] ?? '';
+      final rpcUrl = rpcUrlStr.isNotEmpty ? rpcUrlStr : env['RPC_URL'] ?? '';
+
+      if (contractAddress.isEmpty ||
+          friTokenAddress.isEmpty ||
+          rpcUrl.isEmpty) {
+        state = state.copyWith(
+          estimatedFee: null,
+          error: 'Missing configuration for the contracts or the RPC.',
+          isLoadingFee: false,
+        );
+        return;
+      }
+
+      final fee = await DpixouService.fromAccount(
+        provider: JsonRpcProvider(nodeUri: Uri.parse(rpcUrl)),
+        contractAddressStr: contractAddress,
+        account: selectedAccount,
+        friTokenAddressStr: friTokenAddress,
+      ).estimateBuyPixFee(friCostForPixWithDecimals);
       if (state.selectedPixAmount == pixAmount) {
         state =
             state.copyWith(estimatedFee: fee, isLoadingFee: false, error: null);
@@ -81,7 +130,49 @@ class BuyTokenFormNotifier extends AutoDisposeNotifier<BuyTokenFormState> {
 
     state = state.copyWith(walletValidationInProgress: true, error: null);
 
-    final result = await DpixouService.defaultConfig().buyPix(
+    final accountAsync =
+        await ref.read(accountStarknetProvider(context).future);
+    if (accountAsync == null) {
+      state = state.copyWith(
+        walletValidationInProgress: false,
+        error: 'No account connected (wallet).',
+      );
+      return false;
+    }
+
+    // Get the .env infos for the contract addresses
+    const contractAddressStr =
+        String.fromEnvironment('DPIXOU_CONTRACT_ADDRESS');
+    const friTokenAddressStr =
+        String.fromEnvironment('FRI_TOKEN_CONTRACT_ADDRESS');
+    const rpcUrlStr = String.fromEnvironment('RPC_URL');
+
+    // Fallback if String.fromEnvironment doesn't work (dev)
+    final env = dotenv.env;
+    final contractAddress = contractAddressStr.isNotEmpty
+        ? contractAddressStr
+        : env['DPIXOU_CONTRACT_ADDRESS'] ?? '';
+    final friTokenAddress = friTokenAddressStr.isNotEmpty
+        ? friTokenAddressStr
+        : env['FRI_TOKEN_CONTRACT_ADDRESS'] ?? '';
+    final rpcUrl = rpcUrlStr.isNotEmpty ? rpcUrlStr : env['RPC_URL'] ?? '';
+
+    if (contractAddress.isEmpty || friTokenAddress.isEmpty || rpcUrl.isEmpty) {
+      state = state.copyWith(
+        walletValidationInProgress: false,
+        error: 'Missing configuration for the contracts or the RPC.',
+      );
+      return false;
+    }
+
+    final dpixouService = DpixouService.fromAccount(
+      provider: JsonRpcProvider(nodeUri: Uri.parse(rpcUrl)),
+      contractAddressStr: contractAddress,
+      account: accountAsync,
+      friTokenAddressStr: friTokenAddress,
+    );
+
+    final result = await dpixouService.buyPix(
       state.correspondingFriAmount!,
     );
 
@@ -100,9 +191,16 @@ class BuyTokenFormNotifier extends AutoDisposeNotifier<BuyTokenFormState> {
         return true;
       },
       failure: (error) {
+        logger
+          ..severe(
+            'Buy PIX failure: ${error.failure} | type: ${error.failure.runtimeType}',
+          )
+          ..severe('Buy PIX failure (full): ${error.failure}');
         state = state.copyWith(
           walletValidationInProgress: false,
-          error: error.failure.message,
+          error: (error.failure.message.isNotEmpty == true
+              ? error.failure.message
+              : 'Technical error: ${error.failure}'),
         );
         return false;
       },

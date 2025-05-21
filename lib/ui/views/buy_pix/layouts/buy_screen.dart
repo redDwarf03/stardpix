@@ -113,8 +113,10 @@ class BuyScreenState extends ConsumerState<BuyScreen> {
                             _selectedPixAmount = newValue;
                           });
                           if (newValue != null) {
-                            buyTokenFormNotifier
-                                .selectPixAmountAndEstimateFee(newValue);
+                            buyTokenFormNotifier.selectPixAmountAndEstimateFee(
+                              context,
+                              newValue,
+                            );
                           }
                         },
                       ),

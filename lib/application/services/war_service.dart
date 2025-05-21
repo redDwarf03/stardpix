@@ -15,25 +15,33 @@ class PixelWarService with ContractDataUtilsMixin {
   PixelWarService({
     required this.provider,
     required String contractAddressStr,
-    required String accountAddress,
+    String? accountAddress,
     required String privateKey,
     required this.pixTokenAddress,
   })  : contractAddress = Felt.fromHexString(contractAddressStr),
-        account = getAccount(
-          accountAddress: Felt.fromHexString(accountAddress),
-          privateKey: Felt.fromHexString(privateKey),
-          nodeUri: provider.nodeUri,
-        );
+        account = accountAddress == null || accountAddress.isEmpty
+            ? null
+            : getAccount(
+                accountAddress: Felt.fromHexString(accountAddress),
+                privateKey: Felt.fromHexString(privateKey),
+                nodeUri: provider.nodeUri,
+              );
+
+  PixelWarService.fromAccount({
+    required this.provider,
+    required String contractAddressStr,
+    required this.account,
+    required String pixTokenAddress,
+  })  : contractAddress = Felt.fromHexString(contractAddressStr),
+        pixTokenAddress = Felt.fromHexString(pixTokenAddress);
 
   factory PixelWarService.defaultConfig() {
     final contractAddressStr = dotenv.env['PIXELWAR_CONTRACT_ADDRESS'];
-    final accountAddressStr = dotenv.env['ACCOUNT_ADDRESS'];
     final privateKeyStr = dotenv.env['STARKNET_PRIVATE_KEY'];
     final rpcUrlStr = dotenv.env['RPC_URL'];
     final pixTokenAddressStr = dotenv.env['PIX_TOKEN_CONTRACT_ADDRESS'];
 
     if (contractAddressStr == null ||
-        accountAddressStr == null ||
         privateKeyStr == null ||
         rpcUrlStr == null ||
         pixTokenAddressStr == null) {
@@ -43,7 +51,6 @@ class PixelWarService with ContractDataUtilsMixin {
     return PixelWarService(
       provider: JsonRpcProvider(nodeUri: Uri.parse(rpcUrlStr)),
       contractAddressStr: contractAddressStr,
-      accountAddress: accountAddressStr,
       privateKey: privateKeyStr,
       pixTokenAddress: Felt.fromHexString(pixTokenAddressStr),
     );
@@ -51,7 +58,7 @@ class PixelWarService with ContractDataUtilsMixin {
   final Logger logger = Logger('PixelWarService');
   final JsonRpcProvider provider;
   final Felt contractAddress;
-  final Account account;
+  final Account? account;
   final Felt pixTokenAddress;
 
   static const int MAX_PIXELS_PER_TX = 64;
@@ -126,6 +133,10 @@ class PixelWarService with ContractDataUtilsMixin {
 
   Future<Result<void, Failure>> addPixels(List<Pixel> pixels) async {
     return Result.guard(() async {
+      if (account == null) {
+        throw Exception('No account connected (wallet).');
+      }
+
       if (pixels.isEmpty) {
         throw Exception('Pixel list cannot be empty');
       }
@@ -145,7 +156,7 @@ class PixelWarService with ContractDataUtilsMixin {
       }
 
       final unlockTime =
-          await getUnlockTime(account.accountAddress.toHexString());
+          await getUnlockTime(account!.accountAddress.toHexString());
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
       if (now < unlockTime) {
@@ -158,9 +169,9 @@ class PixelWarService with ContractDataUtilsMixin {
       final totalPixToBurn = onePixInWei * BigInt.from(pixels.length);
 
       logger.info(
-        'Approving PixelWar contract (${contractAddress.toHexString()}) to spend $totalPixToBurn PIX from account ${account.accountAddress.toHexString()} for token ${pixTokenAddress.toHexString()}',
+        'Approving PixelWar contract (${contractAddress.toHexString()}) to spend $totalPixToBurn PIX from account ${account!.accountAddress.toHexString()} for token ${pixTokenAddress.toHexString()}',
       );
-      final approveResponse = await account.execute(
+      final approveResponse = await account!.execute(
         functionCalls: [
           FunctionCall(
             contractAddress: pixTokenAddress,
@@ -196,7 +207,7 @@ class PixelWarService with ContractDataUtilsMixin {
         request: FunctionCall(
           contractAddress: ethTokenAddress,
           entryPointSelector: getSelectorByName('balanceOf'),
-          calldata: [account.accountAddress],
+          calldata: [account!.accountAddress],
         ),
         blockId: BlockId.latest,
       );
@@ -210,7 +221,7 @@ class PixelWarService with ContractDataUtilsMixin {
         },
       );
       logger.info(
-        'Account ETH balance ${account.accountAddress.toHexString()}: $ethBalance wei',
+        'Account ETH balance ${account!.accountAddress.toHexString()}: $ethBalance wei',
       );
 
       // Arbitrary threshold of 0.01 ETH (1e16 wei)
@@ -239,7 +250,7 @@ class PixelWarService with ContractDataUtilsMixin {
 
         // Estimate fees before execution
         try {
-          final feeEstimate = await account.getEstimateMaxFeeForInvokeTx(
+          final feeEstimate = await account!.getEstimateMaxFeeForInvokeTx(
             functionCalls: [
               FunctionCall(
                 contractAddress: contractAddress,
@@ -258,9 +269,9 @@ class PixelWarService with ContractDataUtilsMixin {
         }
 
         logger.info(
-          'Calling account.execute for account: ${account.accountAddress.toHexString()}',
+          'Calling account.execute for account: ${account!.accountAddress.toHexString()}',
         );
-        final invokeResponse = await account.execute(
+        final invokeResponse = await account!.execute(
           functionCalls: [
             FunctionCall(
               contractAddress: contractAddress,
@@ -348,9 +359,14 @@ class PixelWarService with ContractDataUtilsMixin {
 
     final result = response.when(
       result: (data) => data,
-      error: (err) => throw Exception(
-        'Failed to retrieve unlock time: ${err.message}',
-      ),
+      error: (err) {
+        logger.severe(
+          'Failed to retrieve unlock time: ${err.message}',
+        );
+        throw Exception(
+          'Failed to retrieve unlock time: ${err.message}',
+        );
+      },
     );
 
     if (result.isEmpty) {

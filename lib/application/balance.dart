@@ -11,9 +11,7 @@ final logger = Logger('userBalance');
 
 @riverpod
 Future<int> userBalance(Ref ref) async {
-  final accountAddress = ref.watch(
-    sessionNotifierProvider.select((session) => session.accountAddress),
-  );
+  final accountAddress = ref.watch(accountAddressProvider);
 
   if (accountAddress.isEmpty) {
     return 0;
@@ -42,9 +40,7 @@ Future<int> userBalance(Ref ref) async {
 /// Provider exposing the user's PIX balance as a BigInt (native units, 18 decimals).
 @riverpod
 Future<BigInt> userBalanceBigInt(Ref ref) async {
-  final accountAddress = ref.watch(
-    sessionNotifierProvider.select((session) => session.accountAddress),
-  );
+  final accountAddress = ref.watch(accountAddressProvider);
 
   if (accountAddress.isEmpty) {
     return BigInt.zero;
@@ -73,9 +69,7 @@ Future<BigInt> userBalanceBigInt(Ref ref) async {
 /// Provider exposing the user's FRI balance as a BigInt (native units, 18 decimals).
 @riverpod
 Future<BigInt> userFriBalanceBigInt(Ref ref) async {
-  final accountAddress = ref.watch(
-    sessionNotifierProvider.select((session) => session.accountAddress),
-  );
+  final accountAddress = ref.watch(accountAddressProvider);
 
   if (accountAddress.isEmpty) {
     return BigInt.zero;
@@ -104,16 +98,11 @@ Future<BigInt> userFriBalanceBigInt(Ref ref) async {
 /// Provider exposing the user's ETH balance as a BigInt (native units, 18 decimals).
 @riverpod
 Future<BigInt> userEthBalanceBigInt(Ref ref) async {
-  final accountAddress = ref.watch(
-    sessionNotifierProvider.select((session) => session.accountAddress),
-  );
+  final accountAddress = ref.watch(accountAddressProvider);
 
   if (accountAddress.isEmpty) {
     return BigInt.zero;
   }
-
-  // ETH_TOKEN_CONTRACT_ADDRESS will be read by the repository
-  // No need to read it here if the repository handles it.
 
   try {
     final balanceRepository = BalanceRepositoryImpl.defaultConfig();
