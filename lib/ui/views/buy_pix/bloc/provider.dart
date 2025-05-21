@@ -1,12 +1,12 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:stardpix/application/balance.dart';
+import 'package:stardpix/application/constants.dart';
 import 'package:stardpix/application/services/dpixou_service.dart';
 import 'package:stardpix/ui/views/buy_pix/bloc/state.dart';
-
-final BigInt bigIntTenPow18 = BigInt.parse('1000000000000000000');
 
 final _buyTokenFormProvider =
     NotifierProvider.autoDispose<BuyTokenFormNotifier, BuyTokenFormState>(

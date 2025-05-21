@@ -62,9 +62,12 @@ class AboutScreen extends ConsumerWidget {
                         'Welcome to the world of decentralized pixel war!',
                         style: textTheme.titleMedium,
                       ),
+                      const SizedBox(
+                        height: 10,
+                      ),
                       Text(
                         'This application runs on the Starknet blockchain.',
-                        style: textTheme.titleMedium,
+                        style: textTheme.titleSmall,
                       ),
                       const SizedBox(
                         height: 10,
@@ -72,19 +75,22 @@ class AboutScreen extends ConsumerWidget {
                       Center(
                         child: Image.asset(
                           'assets/images/starDPix_welcome.png',
-                          height: 230,
+                          height: 170,
                         ),
                       ),
                       Text(
                         "You can consult the game's smart contracts here:",
-                        style: textTheme.titleMedium,
+                        style: textTheme.titleSmall,
+                      ),
+                      const SizedBox(
+                        height: 10,
                       ),
                       Row(
                         children: [
                           Expanded(
                             child: Text(
-                              'War Contract Address: ${PixelWarService.defaultConfig().contractAddress.toHexString()}',
-                              style: textTheme.titleMedium,
+                              'War Contract Address:\n${PixelWarService.defaultConfig().contractAddress.toHexString()}',
+                              style: textTheme.bodySmall,
                             ),
                           ),
                           const SizedBox(
@@ -109,8 +115,8 @@ class AboutScreen extends ConsumerWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              'dPixou Contract Address: ${DpixouService.defaultConfig().contractAddress.toHexString()}',
-                              style: textTheme.titleMedium,
+                              'dPixou Contract Address:\n${DpixouService.defaultConfig().contractAddress.toHexString()}',
+                              style: textTheme.bodySmall,
                             ),
                           ),
                           const SizedBox(

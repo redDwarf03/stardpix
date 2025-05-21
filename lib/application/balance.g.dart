@@ -6,7 +6,7 @@ part of 'balance.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$userBalanceHash() => r'c505b90c972ce96143951e4b6a3fbdde06988915';
+String _$userBalanceHash() => r'c849fa090e3af1065b4908876ee44bee6318d812';
 
 /// See also [userBalance].
 @ProviderFor(userBalance)
@@ -22,7 +22,7 @@ final userBalanceProvider = AutoDisposeFutureProvider<int>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef UserBalanceRef = AutoDisposeFutureProviderRef<int>;
-String _$userBalanceBigIntHash() => r'e4df630e549a7c190516b0b891ce71ea5a68cef2';
+String _$userBalanceBigIntHash() => r'87859dc14cc710942bd541ce8c22211949fa6dd9';
 
 /// Provider exposing the user's PIX balance as a BigInt (native units, 18 decimals).
 ///
@@ -42,7 +42,7 @@ final userBalanceBigIntProvider = AutoDisposeFutureProvider<BigInt>.internal(
 // ignore: unused_element
 typedef UserBalanceBigIntRef = AutoDisposeFutureProviderRef<BigInt>;
 String _$userFriBalanceBigIntHash() =>
-    r'fd0011cac64feed7d938214ab8aeb6c817f43d55';
+    r'b8bd84e718171ce1058189109f4110010b9b4dd1';
 
 /// Provider exposing the user's FRI balance as a BigInt (native units, 18 decimals).
 ///
@@ -62,7 +62,7 @@ final userFriBalanceBigIntProvider = AutoDisposeFutureProvider<BigInt>.internal(
 // ignore: unused_element
 typedef UserFriBalanceBigIntRef = AutoDisposeFutureProviderRef<BigInt>;
 String _$userEthBalanceBigIntHash() =>
-    r'637bb8a46c40b0d702377d06e233141e0cfc164c';
+    r'74a166808f41aa648a77ed9c4d8bdf54404ab286';
 
 /// Provider exposing the user's ETH balance as a BigInt (native units, 18 decimals).
 ///

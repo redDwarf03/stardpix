@@ -1,5 +1,6 @@
 # starDPix
 
+Are you ready for a decentralized pixels war on Starknet blockchain!
 Flutter application to interact with StarkNet contracts: PixelWar, Dpixou, and PixToken.
 
 ## Prerequisites
@@ -354,3 +355,7 @@ This script is useful for quick verification of the contract interactions withou
     # .gitignore
     lib/application/contracts/.env
     ```
+
+# Extra
+
+Thanks to Gregory H. for his gift!
