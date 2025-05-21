@@ -21,6 +21,7 @@ mixin _$LayerFormState {
   bool get createInProgress => throw _privateConstructorUsedError;
   List<Pixel> get pendingPixels => throw _privateConstructorUsedError;
   bool get isBuyProcess => throw _privateConstructorUsedError;
+  bool get isWalletProcess => throw _privateConstructorUsedError;
   bool get displayColorPicker => throw _privateConstructorUsedError;
   bool get displayAbout => throw _privateConstructorUsedError;
   bool get pickColor => throw _privateConstructorUsedError;
@@ -28,6 +29,8 @@ mixin _$LayerFormState {
   int get maxPixEdit => throw _privateConstructorUsedError;
   Mode get mode => throw _privateConstructorUsedError;
   int get timeLockInSeconds => throw _privateConstructorUsedError;
+  bool get quickDrawMode => throw _privateConstructorUsedError;
+  int get zoomLevel => throw _privateConstructorUsedError;
 
   /// Create a copy of LayerFormState
   /// with the given fields replaced by the non-null parameter values.
@@ -48,13 +51,16 @@ abstract class $LayerFormStateCopyWith<$Res> {
       bool createInProgress,
       List<Pixel> pendingPixels,
       bool isBuyProcess,
+      bool isWalletProcess,
       bool displayColorPicker,
       bool displayAbout,
       bool pickColor,
       int nbPixEdit,
       int maxPixEdit,
       Mode mode,
-      int timeLockInSeconds});
+      int timeLockInSeconds,
+      bool quickDrawMode,
+      int zoomLevel});
 }
 
 /// @nodoc
@@ -77,6 +83,7 @@ class _$LayerFormStateCopyWithImpl<$Res, $Val extends LayerFormState>
     Object? createInProgress = null,
     Object? pendingPixels = null,
     Object? isBuyProcess = null,
+    Object? isWalletProcess = null,
     Object? displayColorPicker = null,
     Object? displayAbout = null,
     Object? pickColor = null,
@@ -84,6 +91,8 @@ class _$LayerFormStateCopyWithImpl<$Res, $Val extends LayerFormState>
     Object? maxPixEdit = null,
     Object? mode = null,
     Object? timeLockInSeconds = null,
+    Object? quickDrawMode = null,
+    Object? zoomLevel = null,
   }) {
     return _then(_value.copyWith(
       errorText: null == errorText
@@ -106,6 +115,10 @@ class _$LayerFormStateCopyWithImpl<$Res, $Val extends LayerFormState>
           ? _value.isBuyProcess
           : isBuyProcess // ignore: cast_nullable_to_non_nullable
               as bool,
+      isWalletProcess: null == isWalletProcess
+          ? _value.isWalletProcess
+          : isWalletProcess // ignore: cast_nullable_to_non_nullable
+              as bool,
       displayColorPicker: null == displayColorPicker
           ? _value.displayColorPicker
           : displayColorPicker // ignore: cast_nullable_to_non_nullable
@@ -134,6 +147,14 @@ class _$LayerFormStateCopyWithImpl<$Res, $Val extends LayerFormState>
           ? _value.timeLockInSeconds
           : timeLockInSeconds // ignore: cast_nullable_to_non_nullable
               as int,
+      quickDrawMode: null == quickDrawMode
+          ? _value.quickDrawMode
+          : quickDrawMode // ignore: cast_nullable_to_non_nullable
+              as bool,
+      zoomLevel: null == zoomLevel
+          ? _value.zoomLevel
+          : zoomLevel // ignore: cast_nullable_to_non_nullable
+              as int,
     ) as $Val);
   }
 }
@@ -152,13 +173,16 @@ abstract class _$$LayerFormStateImplCopyWith<$Res>
       bool createInProgress,
       List<Pixel> pendingPixels,
       bool isBuyProcess,
+      bool isWalletProcess,
       bool displayColorPicker,
       bool displayAbout,
       bool pickColor,
       int nbPixEdit,
       int maxPixEdit,
       Mode mode,
-      int timeLockInSeconds});
+      int timeLockInSeconds,
+      bool quickDrawMode,
+      int zoomLevel});
 }
 
 /// @nodoc
@@ -179,6 +203,7 @@ class __$$LayerFormStateImplCopyWithImpl<$Res>
     Object? createInProgress = null,
     Object? pendingPixels = null,
     Object? isBuyProcess = null,
+    Object? isWalletProcess = null,
     Object? displayColorPicker = null,
     Object? displayAbout = null,
     Object? pickColor = null,
@@ -186,6 +211,8 @@ class __$$LayerFormStateImplCopyWithImpl<$Res>
     Object? maxPixEdit = null,
     Object? mode = null,
     Object? timeLockInSeconds = null,
+    Object? quickDrawMode = null,
+    Object? zoomLevel = null,
   }) {
     return _then(_$LayerFormStateImpl(
       errorText: null == errorText
@@ -208,6 +235,10 @@ class __$$LayerFormStateImplCopyWithImpl<$Res>
           ? _value.isBuyProcess
           : isBuyProcess // ignore: cast_nullable_to_non_nullable
               as bool,
+      isWalletProcess: null == isWalletProcess
+          ? _value.isWalletProcess
+          : isWalletProcess // ignore: cast_nullable_to_non_nullable
+              as bool,
       displayColorPicker: null == displayColorPicker
           ? _value.displayColorPicker
           : displayColorPicker // ignore: cast_nullable_to_non_nullable
@@ -236,6 +267,14 @@ class __$$LayerFormStateImplCopyWithImpl<$Res>
           ? _value.timeLockInSeconds
           : timeLockInSeconds // ignore: cast_nullable_to_non_nullable
               as int,
+      quickDrawMode: null == quickDrawMode
+          ? _value.quickDrawMode
+          : quickDrawMode // ignore: cast_nullable_to_non_nullable
+              as bool,
+      zoomLevel: null == zoomLevel
+          ? _value.zoomLevel
+          : zoomLevel // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -249,13 +288,16 @@ class _$LayerFormStateImpl extends _LayerFormState {
       this.createInProgress = false,
       final List<Pixel> pendingPixels = const [],
       this.isBuyProcess = false,
+      this.isWalletProcess = false,
       this.displayColorPicker = false,
       this.displayAbout = false,
       this.pickColor = false,
       this.nbPixEdit = 0,
       this.maxPixEdit = 64,
       this.mode = Mode.edit,
-      this.timeLockInSeconds = 0})
+      this.timeLockInSeconds = 0,
+      this.quickDrawMode = false,
+      this.zoomLevel = 0})
       : _pendingPixels = pendingPixels,
         super._();
 
@@ -282,6 +324,9 @@ class _$LayerFormStateImpl extends _LayerFormState {
   final bool isBuyProcess;
   @override
   @JsonKey()
+  final bool isWalletProcess;
+  @override
+  @JsonKey()
   final bool displayColorPicker;
   @override
   @JsonKey()
@@ -301,10 +346,16 @@ class _$LayerFormStateImpl extends _LayerFormState {
   @override
   @JsonKey()
   final int timeLockInSeconds;
+  @override
+  @JsonKey()
+  final bool quickDrawMode;
+  @override
+  @JsonKey()
+  final int zoomLevel;
 
   @override
   String toString() {
-    return 'LayerFormState(errorText: $errorText, refreshInProgress: $refreshInProgress, createInProgress: $createInProgress, pendingPixels: $pendingPixels, isBuyProcess: $isBuyProcess, displayColorPicker: $displayColorPicker, displayAbout: $displayAbout, pickColor: $pickColor, nbPixEdit: $nbPixEdit, maxPixEdit: $maxPixEdit, mode: $mode, timeLockInSeconds: $timeLockInSeconds)';
+    return 'LayerFormState(errorText: $errorText, refreshInProgress: $refreshInProgress, createInProgress: $createInProgress, pendingPixels: $pendingPixels, isBuyProcess: $isBuyProcess, isWalletProcess: $isWalletProcess, displayColorPicker: $displayColorPicker, displayAbout: $displayAbout, pickColor: $pickColor, nbPixEdit: $nbPixEdit, maxPixEdit: $maxPixEdit, mode: $mode, timeLockInSeconds: $timeLockInSeconds, quickDrawMode: $quickDrawMode, zoomLevel: $zoomLevel)';
   }
 
   @override
@@ -322,6 +373,8 @@ class _$LayerFormStateImpl extends _LayerFormState {
                 .equals(other._pendingPixels, _pendingPixels) &&
             (identical(other.isBuyProcess, isBuyProcess) ||
                 other.isBuyProcess == isBuyProcess) &&
+            (identical(other.isWalletProcess, isWalletProcess) ||
+                other.isWalletProcess == isWalletProcess) &&
             (identical(other.displayColorPicker, displayColorPicker) ||
                 other.displayColorPicker == displayColorPicker) &&
             (identical(other.displayAbout, displayAbout) ||
@@ -334,7 +387,11 @@ class _$LayerFormStateImpl extends _LayerFormState {
                 other.maxPixEdit == maxPixEdit) &&
             (identical(other.mode, mode) || other.mode == mode) &&
             (identical(other.timeLockInSeconds, timeLockInSeconds) ||
-                other.timeLockInSeconds == timeLockInSeconds));
+                other.timeLockInSeconds == timeLockInSeconds) &&
+            (identical(other.quickDrawMode, quickDrawMode) ||
+                other.quickDrawMode == quickDrawMode) &&
+            (identical(other.zoomLevel, zoomLevel) ||
+                other.zoomLevel == zoomLevel));
   }
 
   @override
@@ -345,13 +402,16 @@ class _$LayerFormStateImpl extends _LayerFormState {
       createInProgress,
       const DeepCollectionEquality().hash(_pendingPixels),
       isBuyProcess,
+      isWalletProcess,
       displayColorPicker,
       displayAbout,
       pickColor,
       nbPixEdit,
       maxPixEdit,
       mode,
-      timeLockInSeconds);
+      timeLockInSeconds,
+      quickDrawMode,
+      zoomLevel);
 
   /// Create a copy of LayerFormState
   /// with the given fields replaced by the non-null parameter values.
@@ -370,13 +430,16 @@ abstract class _LayerFormState extends LayerFormState {
       final bool createInProgress,
       final List<Pixel> pendingPixels,
       final bool isBuyProcess,
+      final bool isWalletProcess,
       final bool displayColorPicker,
       final bool displayAbout,
       final bool pickColor,
       final int nbPixEdit,
       final int maxPixEdit,
       final Mode mode,
-      final int timeLockInSeconds}) = _$LayerFormStateImpl;
+      final int timeLockInSeconds,
+      final bool quickDrawMode,
+      final int zoomLevel}) = _$LayerFormStateImpl;
   const _LayerFormState._() : super._();
 
   @override
@@ -389,6 +452,8 @@ abstract class _LayerFormState extends LayerFormState {
   List<Pixel> get pendingPixels;
   @override
   bool get isBuyProcess;
+  @override
+  bool get isWalletProcess;
   @override
   bool get displayColorPicker;
   @override
@@ -403,6 +468,10 @@ abstract class _LayerFormState extends LayerFormState {
   Mode get mode;
   @override
   int get timeLockInSeconds;
+  @override
+  bool get quickDrawMode;
+  @override
+  int get zoomLevel;
 
   /// Create a copy of LayerFormState
   /// with the given fields replaced by the non-null parameter values.

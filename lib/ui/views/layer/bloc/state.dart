@@ -13,6 +13,7 @@ class LayerFormState with _$LayerFormState {
     @Default(false) bool createInProgress,
     @Default([]) List<Pixel> pendingPixels,
     @Default(false) bool isBuyProcess,
+    @Default(false) bool isWalletProcess,
     @Default(false) bool displayColorPicker,
     @Default(false) bool displayAbout,
     @Default(false) bool pickColor,
@@ -20,6 +21,8 @@ class LayerFormState with _$LayerFormState {
     @Default(64) int maxPixEdit,
     @Default(Mode.edit) Mode mode,
     @Default(0) int timeLockInSeconds,
+    @Default(false) bool quickDrawMode,
+    @Default(0) int zoomLevel,
   }) = _LayerFormState;
   const LayerFormState._();
 

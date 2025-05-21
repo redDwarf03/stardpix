@@ -61,14 +61,14 @@ class LayerFormNotifier extends AutoDisposeNotifier<LayerFormState> {
       } else {
         final balance = await ref.read(userBalanceProvider.future);
         if (balance > 0) {
-          if (state.nbPixEdit + 1 > balance) {
+          if (state.nbPixEdit >= balance) {
             state = state.copyWith(
               errorText: "you don't have enough PIX",
             );
             return false;
           }
 
-          if (state.nbPixEdit + 1 > state.maxPixEdit) {
+          if (state.nbPixEdit >= state.maxPixEdit) {
             state = state.copyWith(
               errorText: 'The maximum number of pixels per round is 64 pixels',
             );
@@ -121,6 +121,7 @@ class LayerFormNotifier extends AutoDisposeNotifier<LayerFormState> {
     if (isBuyProcess == true) {
       state = state.copyWith(
         isBuyProcess: isBuyProcess,
+        isWalletProcess: false,
         displayAbout: false,
         displayColorPicker: false,
         pickColor: false,
@@ -133,10 +134,28 @@ class LayerFormNotifier extends AutoDisposeNotifier<LayerFormState> {
     }
   }
 
+  void setIsWalletProcess(bool isWalletProcess, WidgetRef ref) {
+    if (isWalletProcess == true) {
+      state = state.copyWith(
+        isWalletProcess: isWalletProcess,
+        isBuyProcess: false,
+        displayAbout: false,
+        displayColorPicker: false,
+        pickColor: false,
+      );
+      cancelValidation(
+        ref,
+      );
+    } else {
+      state = state.copyWith(isWalletProcess: isWalletProcess);
+    }
+  }
+
   void setDisplayColorPicker(bool displayColorPicker) {
     if (displayColorPicker == true) {
       state = state.copyWith(
         isBuyProcess: false,
+        isWalletProcess: false,
         displayAbout: false,
         displayColorPicker: displayColorPicker,
         pickColor: false,
@@ -150,6 +169,7 @@ class LayerFormNotifier extends AutoDisposeNotifier<LayerFormState> {
     if (displayAbout == true) {
       state = state.copyWith(
         isBuyProcess: false,
+        isWalletProcess: false,
         displayAbout: displayAbout,
         displayColorPicker: false,
         pickColor: false,
@@ -170,6 +190,7 @@ class LayerFormNotifier extends AutoDisposeNotifier<LayerFormState> {
     if (pickColor == true) {
       state = state.copyWith(
         isBuyProcess: false,
+        isWalletProcess: false,
         displayAbout: false,
         displayColorPicker: false,
         pickColor: pickColor,
@@ -179,9 +200,21 @@ class LayerFormNotifier extends AutoDisposeNotifier<LayerFormState> {
     }
   }
 
+  void setQuickDrawMode(bool quickDrawMode) {
+    state = state.copyWith(quickDrawMode: quickDrawMode);
+  }
+
+  void setZoomLevel(int zoomLevel) {
+    state = state.copyWith(zoomLevel: zoomLevel);
+  }
+
   Future<void> getTimeLockInSeconds() async {
     var timeLockInSeconds = 0;
-    final accountAddress = ref.read(sessionNotifierProvider).accountAddress;
+    final accountAddress = ref.read(accountAddressProvider);
+    if (accountAddress.isEmpty) {
+      setTimeLockInSeconds(0);
+      return;
+    }
     final unlockTime = await PixelWarService.defaultConfig().getUnlockTime(
       accountAddress,
     );

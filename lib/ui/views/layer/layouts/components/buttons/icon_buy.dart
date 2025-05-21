@@ -14,17 +14,17 @@ class IconBuy extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userPixBalanceAsyncValue = ref.watch(userBalanceBigIntProvider);
-    final session = ref.watch(sessionNotifierProvider);
+    final isConnected = ref.watch(isConnectedProvider);
     final layer = ref.watch(LayerFormProvider.layerForm);
 
     return Stack(
       clipBehavior: Clip.none,
       children: [
         IconButton(
-          tooltip: session.isConnected
+          tooltip: isConnected
               ? 'Get PIX tokens to play'
               : 'Connect wallet to buy PIX Tokens',
-          onPressed: session.isConnected == false
+          onPressed: isConnected == false
               ? null
               : () {
                   ref
@@ -38,7 +38,7 @@ class IconBuy extends ConsumerWidget {
               color: Colors.orange[200],
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   spreadRadius: 1,
                   blurRadius: 5,
                   offset: const Offset(0, 3),
@@ -51,17 +51,17 @@ class IconBuy extends ConsumerWidget {
                 Icon(
                   pixelarticons.Pixel.briefcaseplus,
                   size: 24,
-                  color: session.isConnected
+                  color: isConnected
                       ? Colors.orange[900]
-                      : Colors.orange[900]!.withOpacity(0.2),
+                      : Colors.orange[900]!.withValues(alpha: 0.2),
                 ),
                 Text(
                   'Buy',
                   style: TextStyle(
                     fontSize: 8,
-                    color: session.isConnected
+                    color: isConnected
                         ? Colors.orange[900]
-                        : Colors.orange[900]!.withOpacity(0.2),
+                        : Colors.orange[900]!.withValues(alpha: 0.2),
                   ),
                 ),
               ],
@@ -77,7 +77,7 @@ class IconBuy extends ConsumerWidget {
               color: Colors.green[100],
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   spreadRadius: 1,
                   blurRadius: 5,
                   offset: const Offset(0, 3),

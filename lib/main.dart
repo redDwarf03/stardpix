@@ -7,20 +7,44 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:logging/logging.dart';
 import 'package:stardpix/ui/views/layer/layouts/main_screen.dart';
 import 'package:stardpix/util/generic/providers_observer.dart';
 import 'package:wallet_kit/wallet_kit.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: 'lib/application/contracts/.env');
+
+  // Setup logging
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    // ignore: avoid_print
+    print(
+      '${record.level.name}: ${record.time}: ${record.loggerName}: ${record.message}',
+    );
+    if (record.error != null) {
+      // ignore: avoid_print
+      print(r'Error: ${record.error}');
+    }
+    if (record.stackTrace != null) {
+      // ignore: avoid_print
+      print(r'StackTrace: ${record.stackTrace}');
+    }
+  });
+
+  // Load the .env file
+  await dotenv.load(
+    fileName: 'lib/application/contracts/.env',
+  );
+
+  print('DEBUG: RPC_URL from .env in main.dart: ${dotenv.env['RPC_URL']}');
+
+  await Hive.initFlutter();
 
   await WalletKit().init(
     accountClassHash: dotenv.env['ACCOUNT_CLASS_HASH']!,
     rpc: dotenv.env['RPC_URL']!,
   );
-
-  await Hive.initFlutter();
 
   runApp(
     ProviderScope(

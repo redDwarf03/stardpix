@@ -16,7 +16,6 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$Session {
-  Environment get environment => throw _privateConstructorUsedError;
   String get nameAccount => throw _privateConstructorUsedError;
   String get accountAddress => throw _privateConstructorUsedError;
   String get error => throw _privateConstructorUsedError;
@@ -32,11 +31,7 @@ abstract class $SessionCopyWith<$Res> {
   factory $SessionCopyWith(Session value, $Res Function(Session) then) =
       _$SessionCopyWithImpl<$Res, Session>;
   @useResult
-  $Res call(
-      {Environment environment,
-      String nameAccount,
-      String accountAddress,
-      String error});
+  $Res call({String nameAccount, String accountAddress, String error});
 }
 
 /// @nodoc
@@ -54,16 +49,11 @@ class _$SessionCopyWithImpl<$Res, $Val extends Session>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? environment = null,
     Object? nameAccount = null,
     Object? accountAddress = null,
     Object? error = null,
   }) {
     return _then(_value.copyWith(
-      environment: null == environment
-          ? _value.environment
-          : environment // ignore: cast_nullable_to_non_nullable
-              as Environment,
       nameAccount: null == nameAccount
           ? _value.nameAccount
           : nameAccount // ignore: cast_nullable_to_non_nullable
@@ -87,11 +77,7 @@ abstract class _$$SessionImplCopyWith<$Res> implements $SessionCopyWith<$Res> {
       __$$SessionImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {Environment environment,
-      String nameAccount,
-      String accountAddress,
-      String error});
+  $Res call({String nameAccount, String accountAddress, String error});
 }
 
 /// @nodoc
@@ -107,16 +93,11 @@ class __$$SessionImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? environment = null,
     Object? nameAccount = null,
     Object? accountAddress = null,
     Object? error = null,
   }) {
     return _then(_$SessionImpl(
-      environment: null == environment
-          ? _value.environment
-          : environment // ignore: cast_nullable_to_non_nullable
-              as Environment,
       nameAccount: null == nameAccount
           ? _value.nameAccount
           : nameAccount // ignore: cast_nullable_to_non_nullable
@@ -137,14 +118,9 @@ class __$$SessionImplCopyWithImpl<$Res>
 
 class _$SessionImpl extends _Session {
   const _$SessionImpl(
-      {required this.environment,
-      this.nameAccount = '',
-      this.accountAddress = '',
-      this.error = ''})
+      {this.nameAccount = '', this.accountAddress = '', this.error = ''})
       : super._();
 
-  @override
-  final Environment environment;
   @override
   @JsonKey()
   final String nameAccount;
@@ -157,7 +133,7 @@ class _$SessionImpl extends _Session {
 
   @override
   String toString() {
-    return 'Session(environment: $environment, nameAccount: $nameAccount, accountAddress: $accountAddress, error: $error)';
+    return 'Session(nameAccount: $nameAccount, accountAddress: $accountAddress, error: $error)';
   }
 
   @override
@@ -165,8 +141,6 @@ class _$SessionImpl extends _Session {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SessionImpl &&
-            (identical(other.environment, environment) ||
-                other.environment == environment) &&
             (identical(other.nameAccount, nameAccount) ||
                 other.nameAccount == nameAccount) &&
             (identical(other.accountAddress, accountAddress) ||
@@ -176,7 +150,7 @@ class _$SessionImpl extends _Session {
 
   @override
   int get hashCode =>
-      Object.hash(runtimeType, environment, nameAccount, accountAddress, error);
+      Object.hash(runtimeType, nameAccount, accountAddress, error);
 
   /// Create a copy of Session
   /// with the given fields replaced by the non-null parameter values.
@@ -189,14 +163,11 @@ class _$SessionImpl extends _Session {
 
 abstract class _Session extends Session {
   const factory _Session(
-      {required final Environment environment,
-      final String nameAccount,
+      {final String nameAccount,
       final String accountAddress,
       final String error}) = _$SessionImpl;
   const _Session._() : super._();
 
-  @override
-  Environment get environment;
   @override
   String get nameAccount;
   @override

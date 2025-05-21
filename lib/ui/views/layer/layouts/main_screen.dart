@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stardpix/application/current_color.dart';
 import 'package:stardpix/application/pixels.dart';
 import 'package:stardpix/application/pixels_canvas.dart';
-import 'package:stardpix/application/session/provider.dart';
 import 'package:stardpix/ui/views/about/layouts/about_screen.dart';
 import 'package:stardpix/ui/views/buy_pix/layouts/buy_screen.dart';
 import 'package:stardpix/ui/views/layer/bloc/provider.dart';
@@ -15,14 +14,17 @@ import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_about.da
 import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_buy.dart';
 import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_color.dart';
 import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_edit.dart';
+import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_large_pixel.dart';
 import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_pick.dart';
 import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_pixel_validation.dart';
 import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_pixel_validation_cancel.dart';
+import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_quick_draw.dart';
 import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_refresh.dart';
 import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_timer.dart';
 import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_wallet.dart';
 import 'package:stardpix/ui/views/layer/layouts/components/canvas_viewer.dart';
 import 'package:stardpix/ui/views/layer/layouts/components/color_picker.dart';
+import 'package:stardpix/ui/views/wallet/layouts/wallet_screen.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -40,17 +42,17 @@ class MainScreenState extends ConsumerState<MainScreen> {
     Future.delayed(Duration.zero, () async {
       if (mounted) {
         try {
-          final sessionNotifier = ref.read(sessionNotifierProvider.notifier);
-          await sessionNotifier.connectWallet();
-        } catch (_) {}
-
-        try {
           final pixels = await ref.read(fetchPixelsProvider.future);
           ref
               .read(PixelCanvasProviders.pixelCanvasProvider.notifier)
               .updatePixelsList(pixels, ref);
 
-          Timer.periodic(const Duration(seconds: 30), (timer) async {
+          _pixelsListTimer =
+              Timer.periodic(const Duration(seconds: 30), (timer) async {
+            if (!mounted) {
+              timer.cancel();
+              return;
+            }
             final pixels = await ref.read(fetchPixelsProvider.future);
             ref
                 .read(PixelCanvasProviders.pixelCanvasProvider.notifier)
@@ -140,6 +142,7 @@ class MainScreenState extends ConsumerState<MainScreen> {
                             alignment: Alignment.center,
                             children: [
                               const CanvasViewer(),
+                              if (layer.isWalletProcess) const WalletScreen(),
                               if (layer.isBuyProcess) const BuyScreen(),
                               if (layer.displayAbout) const AboutScreen(),
                             ],
@@ -178,7 +181,9 @@ class MainScreenState extends ConsumerState<MainScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                const IconQuickDraw(),
                 const IconEdit(),
+                const IconLargePixel(),
                 const IconTimer(),
                 if (layer.pendingPixels.isNotEmpty)
                   const IconPixelValicationCancel(),
