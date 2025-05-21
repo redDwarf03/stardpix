@@ -17,7 +17,7 @@ class IconClose extends ConsumerWidget {
           onPressed: () {
             ref
                 .read(LayerFormProvider.layerForm.notifier)
-                .setIsBuyProcess(false, ref);
+                .setIsWalletProcess(false, ref);
           },
           icon: Container(
             padding: const EdgeInsets.all(8),

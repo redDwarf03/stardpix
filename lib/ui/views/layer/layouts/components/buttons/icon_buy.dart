@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pixelarticons/pixel.dart' as pixelarticons;
 import 'package:stardpix/application/balance.dart';
+import 'package:stardpix/application/constants.dart';
 import 'package:stardpix/application/session/provider.dart';
 import 'package:stardpix/ui/views/layer/bloc/provider.dart';
 
@@ -15,7 +16,6 @@ class IconBuy extends ConsumerWidget {
     final userPixBalanceAsyncValue = ref.watch(userBalanceBigIntProvider);
     final session = ref.watch(sessionNotifierProvider);
     final layer = ref.watch(LayerFormProvider.layerForm);
-    final bigIntTenPow18 = BigInt.parse('1000000000000000000');
 
     return Stack(
       clipBehavior: Clip.none,

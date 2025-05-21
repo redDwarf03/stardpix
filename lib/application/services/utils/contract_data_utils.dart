@@ -13,10 +13,10 @@ mixin ContractDataUtilsMixin {
     return [low, high];
   }
 
-  int _rgbToFelt(int r, int g, int b) {
-    final r_ = r.clamp(0, 255);
-    final g_ = g.clamp(0, 255);
-    final b_ = b.clamp(0, 255);
+  int _rgbToFelt(double r, double g, double b) {
+    final r_ = r.clamp(0, 255).toInt();
+    final g_ = g.clamp(0, 255).toInt();
+    final b_ = b.clamp(0, 255).toInt();
 
     return (r_ << 16) | (g_ << 8) | b_;
   }
@@ -35,6 +35,6 @@ mixin ContractDataUtilsMixin {
   }
 
   int colorToFelt(Color color) {
-    return _rgbToFelt(color.red, color.green, color.blue);
+    return _rgbToFelt(color.r, color.g, color.b);
   }
 }

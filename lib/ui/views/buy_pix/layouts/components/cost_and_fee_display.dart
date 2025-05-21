@@ -34,17 +34,17 @@ class CostAndFeeDisplay extends ConsumerWidget {
           ),
         ),
         if (buyTokenForm.isLoadingFee)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 4),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   'Estimating fee... ',
-                  style: TextStyle(color: Colors.amber),
+                  style:
+                      textTheme.bodySmall?.copyWith(color: Colors.amber[200]),
                 ),
-                SizedBox(width: 10),
-                SizedBox(
+                const SizedBox(width: 10),
+                const SizedBox(
                   width: 10,
                   height: 10,
                   child: CircularProgressIndicator(

@@ -76,72 +76,74 @@ class BuyScreenState extends ConsumerState<BuyScreen> {
                   left: 10,
                   right: 10,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text('Buy PIX token', style: textTheme.titleMedium),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Rate: $friPerPixRate FRI = 1 PIX',
-                          style: textTheme.bodySmall,
-                        ),
-                        Text(
-                          'Cost: 1 PIX = 1 Pixel (+ transaction fees)',
-                          style: textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    PixBalanceDisplay(textTheme: textTheme),
-                    const SizedBox(height: 15),
-                    EthBalanceDisplay(textTheme: textTheme),
-                    const SizedBox(height: 15),
-                    FriBalanceDisplay(
-                      textTheme: textTheme,
-                      selectedPixAmount: _selectedPixAmount,
-                      onPixAmountChanged: (newValue) {
-                        setState(() {
-                          _selectedPixAmount = newValue;
-                        });
-                        if (newValue != null) {
-                          buyTokenFormNotifier
-                              .selectPixAmountAndEstimateFee(newValue);
-                        }
-                      },
-                    ),
-                    if (buyTokenForm.error != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text(
-                          buyTokenForm.error!,
-                          style: TextStyle(color: Colors.red[300]),
-                        ),
-                      )
-                    else
-                      const SizedBox(height: 24),
-                    CostAndFeeDisplay(
-                      textTheme: textTheme,
-                      selectedPixAmount: _selectedPixAmount,
-                    ),
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text('Buy PIX token', style: textTheme.titleMedium),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          BuyButton(selectedPixAmount: _selectedPixAmount),
+                          Text(
+                            'Rate: $friPerPixRate FRI = 1 PIX',
+                            style: textTheme.bodySmall,
+                          ),
+                          Text(
+                            'Cost: 1 PIX = 1 Pixel (+ transaction fees)',
+                            style: textTheme.bodySmall,
+                          ),
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      PixBalanceDisplay(textTheme: textTheme),
+                      const SizedBox(height: 15),
+                      EthBalanceDisplay(textTheme: textTheme),
+                      const SizedBox(height: 15),
+                      FriBalanceDisplay(
+                        textTheme: textTheme,
+                        selectedPixAmount: _selectedPixAmount,
+                        onPixAmountChanged: (newValue) {
+                          setState(() {
+                            _selectedPixAmount = newValue;
+                          });
+                          if (newValue != null) {
+                            buyTokenFormNotifier
+                                .selectPixAmountAndEstimateFee(newValue);
+                          }
+                        },
+                      ),
+                      if (buyTokenForm.error != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            buyTokenForm.error!,
+                            style: TextStyle(color: Colors.red[300]),
+                          ),
+                        )
+                      else
+                        const SizedBox(height: 24),
+                      CostAndFeeDisplay(
+                        textTheme: textTheme,
+                        selectedPixAmount: _selectedPixAmount,
+                      ),
+                      const SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            BuyButton(selectedPixAmount: _selectedPixAmount),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -12,6 +12,20 @@ class MyPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final pixels = ref.read(PixelCanvasProviders.pixelCanvasProvider);
     final layer = ref.watch(LayerFormProvider.layerForm);
+    final zoomLevel = layer.zoomLevel;
+
+    double pixelSize;
+    switch (zoomLevel) {
+      case 1: // Large
+        pixelSize = 20.0;
+        break;
+      case 2: // X-Large
+        pixelSize = 30.0; // Or another value for X-Large
+        break;
+      default: // Normal
+        pixelSize = 10.0;
+        break;
+    }
 
     for (final pixel in pixels) {
       final paint = Paint()
@@ -19,10 +33,10 @@ class MyPainter extends CustomPainter {
         ..color = pixel.color!;
       canvas.drawRect(
         Rect.fromLTWH(
-          pixel.dx!.toDouble() * 10,
-          pixel.dy!.toDouble() * 10,
-          10,
-          10,
+          pixel.dx!.toDouble() * pixelSize,
+          pixel.dy!.toDouble() * pixelSize,
+          pixelSize,
+          pixelSize,
         ),
         paint,
       );
@@ -31,10 +45,10 @@ class MyPainter extends CustomPainter {
     for (final pixel in layer.pendingPixels) {
       if (pixel.isPendingPixel == true) {
         final pendingRect = Rect.fromLTWH(
-          pixel.dx!.toDouble() * 10,
-          pixel.dy!.toDouble() * 10,
-          10,
-          10,
+          pixel.dx!.toDouble() * pixelSize,
+          pixel.dy!.toDouble() * pixelSize,
+          pixelSize,
+          pixelSize,
         );
         final paint = Paint()
           ..style = PaintingStyle.fill
@@ -56,14 +70,14 @@ class MyPainter extends CustomPainter {
         ..style = PaintingStyle.fill;
 
       final borderPaint = Paint()
-        ..color = Colors.black.withOpacity(0.3)
+        ..color = Colors.black.withValues(alpha: 0.3)
         ..style = PaintingStyle.stroke;
 
       final previewRect = Rect.fromLTWH(
-        (cursorPosition!.dx / 10).floorToDouble() * 10,
-        (cursorPosition!.dy / 10).floorToDouble() * 10,
-        10,
-        10,
+        (cursorPosition!.dx / pixelSize).floorToDouble() * pixelSize,
+        (cursorPosition!.dy / pixelSize).floorToDouble() * pixelSize,
+        pixelSize,
+        pixelSize,
       );
 
       canvas

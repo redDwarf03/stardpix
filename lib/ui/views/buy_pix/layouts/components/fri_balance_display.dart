@@ -18,6 +18,7 @@ class FriBalanceDisplay extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userFriBalanceAsyncValue = ref.watch(userFriBalanceBigIntProvider);
+    const pixPurchaseOptions = [1, 2, 5, 10, 20, 40, 50, 75, 100];
 
     return userFriBalanceAsyncValue.when(
       data: (friBalanceBigInt) {
@@ -53,7 +54,7 @@ class FriBalanceDisplay extends ConsumerWidget {
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                 ),
                 child: DropdownButton<int>(
                   value: selectedPixAmount,
@@ -69,13 +70,14 @@ class FriBalanceDisplay extends ConsumerWidget {
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
-                  items: List<DropdownMenuItem<int>>.generate(
-                    maxPixBuyable,
-                    (index) => DropdownMenuItem(
-                      value: index + 1,
-                      child: Text('${index + 1} PIX'),
-                    ),
-                  ),
+                  items: pixPurchaseOptions
+                      .where((amount) => amount <= maxPixBuyable)
+                      .map<DropdownMenuItem<int>>((int value) {
+                    return DropdownMenuItem<int>(
+                      value: value,
+                      child: Text('$value PIX'),
+                    );
+                  }).toList(),
                   onChanged: onPixAmountChanged,
                 ),
               ),

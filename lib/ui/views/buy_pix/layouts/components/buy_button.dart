@@ -27,7 +27,7 @@ class BuyButton extends ConsumerWidget {
             color: Colors.orange[200],
             boxShadow: [
               BoxShadow(
-                color: Colors.orange[900]!.withOpacity(0.2),
+                color: Colors.orange[900]!.withValues(alpha: 0.2),
                 spreadRadius: 1,
                 blurRadius: 5,
                 offset: const Offset(0, 3),
@@ -74,11 +74,11 @@ class BuyButton extends ConsumerWidget {
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: isDisabled
-              ? Colors.orange[200]!.withOpacity(0.2)
+              ? Colors.orange[200]!.withValues(alpha: 0.2)
               : Colors.orange[200],
           boxShadow: [
             BoxShadow(
-              color: Colors.orange[200]!.withOpacity(0.2),
+              color: Colors.orange[200]!.withValues(alpha: 0.2),
               spreadRadius: 1,
               blurRadius: 5,
               offset: const Offset(0, 3),
@@ -88,8 +88,8 @@ class BuyButton extends ConsumerWidget {
         ),
         child: Text(
           AppLocalizations.of(context)!.btn_buy_token,
-          style: TextStyle(
-            color: Colors.black.withOpacity(0.2),
+          style: const TextStyle(
+            color: Colors.black,
           ),
         ),
       ),
