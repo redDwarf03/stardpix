@@ -37,14 +37,12 @@ Future<void> main() async {
     fileName: 'lib/application/contracts/.env',
   );
 
-  print('DEBUG: RPC_URL from .env in main.dart: ${dotenv.env['RPC_URL']}');
-
-  await Hive.initFlutter();
-
   await WalletKit().init(
     accountClassHash: dotenv.env['ACCOUNT_CLASS_HASH']!,
     rpc: dotenv.env['RPC_URL']!,
   );
+
+  await Hive.initFlutter();
 
   runApp(
     ProviderScope(

@@ -20,7 +20,7 @@ mixin _$BuyTokenFormState {
   bool get walletValidationInProgress => throw _privateConstructorUsedError;
   FeeEstimations? get estimatedFee => throw _privateConstructorUsedError;
   int? get selectedPixAmount => throw _privateConstructorUsedError;
-  BigInt? get correspondingFriAmount => throw _privateConstructorUsedError;
+  BigInt? get correspondingStrkAmount => throw _privateConstructorUsedError;
   bool get isLoadingFee => throw _privateConstructorUsedError;
 
   /// Create a copy of BuyTokenFormState
@@ -41,7 +41,7 @@ abstract class $BuyTokenFormStateCopyWith<$Res> {
       bool walletValidationInProgress,
       FeeEstimations? estimatedFee,
       int? selectedPixAmount,
-      BigInt? correspondingFriAmount,
+      BigInt? correspondingStrkAmount,
       bool isLoadingFee});
 }
 
@@ -64,7 +64,7 @@ class _$BuyTokenFormStateCopyWithImpl<$Res, $Val extends BuyTokenFormState>
     Object? walletValidationInProgress = null,
     Object? estimatedFee = freezed,
     Object? selectedPixAmount = freezed,
-    Object? correspondingFriAmount = freezed,
+    Object? correspondingStrkAmount = freezed,
     Object? isLoadingFee = null,
   }) {
     return _then(_value.copyWith(
@@ -84,9 +84,9 @@ class _$BuyTokenFormStateCopyWithImpl<$Res, $Val extends BuyTokenFormState>
           ? _value.selectedPixAmount
           : selectedPixAmount // ignore: cast_nullable_to_non_nullable
               as int?,
-      correspondingFriAmount: freezed == correspondingFriAmount
-          ? _value.correspondingFriAmount
-          : correspondingFriAmount // ignore: cast_nullable_to_non_nullable
+      correspondingStrkAmount: freezed == correspondingStrkAmount
+          ? _value.correspondingStrkAmount
+          : correspondingStrkAmount // ignore: cast_nullable_to_non_nullable
               as BigInt?,
       isLoadingFee: null == isLoadingFee
           ? _value.isLoadingFee
@@ -109,7 +109,7 @@ abstract class _$$BuyTokenFormStateImplCopyWith<$Res>
       bool walletValidationInProgress,
       FeeEstimations? estimatedFee,
       int? selectedPixAmount,
-      BigInt? correspondingFriAmount,
+      BigInt? correspondingStrkAmount,
       bool isLoadingFee});
 }
 
@@ -130,7 +130,7 @@ class __$$BuyTokenFormStateImplCopyWithImpl<$Res>
     Object? walletValidationInProgress = null,
     Object? estimatedFee = freezed,
     Object? selectedPixAmount = freezed,
-    Object? correspondingFriAmount = freezed,
+    Object? correspondingStrkAmount = freezed,
     Object? isLoadingFee = null,
   }) {
     return _then(_$BuyTokenFormStateImpl(
@@ -150,9 +150,9 @@ class __$$BuyTokenFormStateImplCopyWithImpl<$Res>
           ? _value.selectedPixAmount
           : selectedPixAmount // ignore: cast_nullable_to_non_nullable
               as int?,
-      correspondingFriAmount: freezed == correspondingFriAmount
-          ? _value.correspondingFriAmount
-          : correspondingFriAmount // ignore: cast_nullable_to_non_nullable
+      correspondingStrkAmount: freezed == correspondingStrkAmount
+          ? _value.correspondingStrkAmount
+          : correspondingStrkAmount // ignore: cast_nullable_to_non_nullable
               as BigInt?,
       isLoadingFee: null == isLoadingFee
           ? _value.isLoadingFee
@@ -170,7 +170,7 @@ class _$BuyTokenFormStateImpl extends _BuyTokenFormState {
       this.walletValidationInProgress = false,
       this.estimatedFee,
       this.selectedPixAmount,
-      this.correspondingFriAmount,
+      this.correspondingStrkAmount,
       this.isLoadingFee = false})
       : super._();
 
@@ -184,14 +184,14 @@ class _$BuyTokenFormStateImpl extends _BuyTokenFormState {
   @override
   final int? selectedPixAmount;
   @override
-  final BigInt? correspondingFriAmount;
+  final BigInt? correspondingStrkAmount;
   @override
   @JsonKey()
   final bool isLoadingFee;
 
   @override
   String toString() {
-    return 'BuyTokenFormState(error: $error, walletValidationInProgress: $walletValidationInProgress, estimatedFee: $estimatedFee, selectedPixAmount: $selectedPixAmount, correspondingFriAmount: $correspondingFriAmount, isLoadingFee: $isLoadingFee)';
+    return 'BuyTokenFormState(error: $error, walletValidationInProgress: $walletValidationInProgress, estimatedFee: $estimatedFee, selectedPixAmount: $selectedPixAmount, correspondingStrkAmount: $correspondingStrkAmount, isLoadingFee: $isLoadingFee)';
   }
 
   @override
@@ -208,8 +208,9 @@ class _$BuyTokenFormStateImpl extends _BuyTokenFormState {
                 other.estimatedFee == estimatedFee) &&
             (identical(other.selectedPixAmount, selectedPixAmount) ||
                 other.selectedPixAmount == selectedPixAmount) &&
-            (identical(other.correspondingFriAmount, correspondingFriAmount) ||
-                other.correspondingFriAmount == correspondingFriAmount) &&
+            (identical(
+                    other.correspondingStrkAmount, correspondingStrkAmount) ||
+                other.correspondingStrkAmount == correspondingStrkAmount) &&
             (identical(other.isLoadingFee, isLoadingFee) ||
                 other.isLoadingFee == isLoadingFee));
   }
@@ -221,7 +222,7 @@ class _$BuyTokenFormStateImpl extends _BuyTokenFormState {
       walletValidationInProgress,
       estimatedFee,
       selectedPixAmount,
-      correspondingFriAmount,
+      correspondingStrkAmount,
       isLoadingFee);
 
   /// Create a copy of BuyTokenFormState
@@ -240,7 +241,7 @@ abstract class _BuyTokenFormState extends BuyTokenFormState {
       final bool walletValidationInProgress,
       final FeeEstimations? estimatedFee,
       final int? selectedPixAmount,
-      final BigInt? correspondingFriAmount,
+      final BigInt? correspondingStrkAmount,
       final bool isLoadingFee}) = _$BuyTokenFormStateImpl;
   const _BuyTokenFormState._() : super._();
 
@@ -253,7 +254,7 @@ abstract class _BuyTokenFormState extends BuyTokenFormState {
   @override
   int? get selectedPixAmount;
   @override
-  BigInt? get correspondingFriAmount;
+  BigInt? get correspondingStrkAmount;
   @override
   bool get isLoadingFee;
 

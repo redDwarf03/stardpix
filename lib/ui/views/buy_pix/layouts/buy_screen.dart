@@ -5,9 +5,9 @@ import 'package:stardpix/ui/views/buy_pix/bloc/provider.dart';
 import 'package:stardpix/ui/views/buy_pix/layouts/components/buy_button.dart';
 import 'package:stardpix/ui/views/buy_pix/layouts/components/cost_and_fee_display.dart';
 import 'package:stardpix/ui/views/buy_pix/layouts/components/eth_balance_display.dart';
-import 'package:stardpix/ui/views/buy_pix/layouts/components/fri_balance_display.dart';
 import 'package:stardpix/ui/views/buy_pix/layouts/components/icon_close.dart';
 import 'package:stardpix/ui/views/buy_pix/layouts/components/pix_balance_display.dart';
+import 'package:stardpix/ui/views/buy_pix/layouts/components/strk_balance_display.dart';
 
 class BuyScreen extends ConsumerStatefulWidget {
   const BuyScreen({
@@ -83,29 +83,27 @@ class BuyScreenState extends ConsumerState<BuyScreen> {
                     children: <Widget>[
                       Text('Buy PIX token', style: textTheme.titleMedium),
                       const SizedBox(
-                        height: 10,
+                        height: 30,
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Rate: $friPerPixRate FRI = 1 PIX',
+                            'Rate: $strkPerPixRate STRK = 1 PIX',
                             style: textTheme.bodySmall,
                           ),
                           Text(
-                            'Cost: 1 PIX = 1 Pixel (+ transaction fees)',
+                            'Cost: 1 PIX = 1 Pixel\n(+ transaction fees)',
                             style: textTheme.bodySmall,
                           ),
                         ],
                       ),
                       const SizedBox(
-                        height: 10,
+                        height: 20,
                       ),
                       PixBalanceDisplay(textTheme: textTheme),
-                      const SizedBox(height: 15),
                       EthBalanceDisplay(textTheme: textTheme),
-                      const SizedBox(height: 15),
-                      FriBalanceDisplay(
+                      StrkBalanceDisplay(
                         textTheme: textTheme,
                         selectedPixAmount: _selectedPixAmount,
                         onPixAmountChanged: (newValue) {
@@ -129,7 +127,7 @@ class BuyScreenState extends ConsumerState<BuyScreen> {
                           ),
                         )
                       else
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                       CostAndFeeDisplay(
                         textTheme: textTheme,
                         selectedPixAmount: _selectedPixAmount,

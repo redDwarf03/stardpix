@@ -10,18 +10,12 @@ class TokenBalanceDisplay extends ConsumerWidget {
     this.loadingText = 'Loading balance...',
     this.errorText = 'Could not load balance',
     this.decimalsToShow = 2,
-    this.customFormattedText,
-    this.leadingWidget,
-    this.trailingWidget,
   });
   final AsyncValue<BigInt> balanceAsyncValue;
   final String tokenSymbol;
   final String loadingText;
   final String errorText;
   final int decimalsToShow;
-  final String Function(String amount, String symbol)? customFormattedText;
-  final Widget? leadingWidget;
-  final Widget? trailingWidget;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,32 +25,25 @@ class TokenBalanceDisplay extends ConsumerWidget {
             balanceBigInt.toDouble() / bigIntTenPow18.toDouble();
         final formattedAmount = balanceDouble.toStringAsFixed(decimalsToShow);
 
-        if (customFormattedText != null) {
-          return Text(
-            customFormattedText!(formattedAmount, tokenSymbol),
-            style: Theme.of(context).textTheme.bodySmall,
-          );
-        }
-
         return Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            if (leadingWidget != null) ...[
-              leadingWidget!,
-              const SizedBox(width: 4),
-            ],
             Text(
               'Your $tokenSymbol Balance: ',
               style: Theme.of(context).textTheme.bodySmall,
             ),
-            Text(formattedAmount, style: Theme.of(context).textTheme.bodySmall),
-            Text(' $tokenSymbol', style: Theme.of(context).textTheme.bodySmall),
-            if (trailingWidget != null) ...[
-              const SizedBox(width: 4),
-              trailingWidget!,
-            ],
+            Row(
+              children: [
+                Text(
+                  formattedAmount,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                Text(
+                  ' $tokenSymbol',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
           ],
         );
       },

@@ -16,7 +16,7 @@ class DpixouService with ContractDataUtilsMixin {
     required String contractAddressStr,
     String? accountAddress,
     required String privateKey,
-    required String friTokenAddressStr,
+    required String strkTokenAddressStr,
   })  : contractAddress = Felt.fromHexString(contractAddressStr),
         account = accountAddress == null || accountAddress.isEmpty
             ? null
@@ -25,26 +25,26 @@ class DpixouService with ContractDataUtilsMixin {
                 privateKey: Felt.fromHexString(privateKey),
                 nodeUri: provider.nodeUri,
               ),
-        friTokenAddress = Felt.fromHexString(friTokenAddressStr);
+        strkTokenAddress = Felt.fromHexString(strkTokenAddressStr);
 
   DpixouService.fromAccount({
     required this.provider,
     required String contractAddressStr,
     required this.account,
-    required String friTokenAddressStr,
+    required String strkTokenAddressStr,
   })  : contractAddress = Felt.fromHexString(contractAddressStr),
-        friTokenAddress = Felt.fromHexString(friTokenAddressStr);
+        strkTokenAddress = Felt.fromHexString(strkTokenAddressStr);
 
   factory DpixouService.defaultConfig() {
     final contractAddressStr = dotenv.env['DPIXOU_CONTRACT_ADDRESS'];
     final privateKeyStr = dotenv.env['STARKNET_PRIVATE_KEY'];
     final rpcUrlStr = dotenv.env['RPC_URL'];
-    final friTokenAddressStr = dotenv.env['FRI_TOKEN_CONTRACT_ADDRESS'];
+    final strkTokenAddressStr = dotenv.env['STRK_TOKEN_CONTRACT_ADDRESS'];
 
     if (contractAddressStr == null ||
         privateKeyStr == null ||
         rpcUrlStr == null ||
-        friTokenAddressStr == null) {
+        strkTokenAddressStr == null) {
       throw Exception('env variables not found');
     }
 
@@ -52,25 +52,25 @@ class DpixouService with ContractDataUtilsMixin {
       provider: JsonRpcProvider(nodeUri: Uri.parse(rpcUrlStr)),
       contractAddressStr: contractAddressStr,
       privateKey: privateKeyStr,
-      friTokenAddressStr: friTokenAddressStr,
+      strkTokenAddressStr: strkTokenAddressStr,
     );
   }
   final Logger logger = Logger('DpixouService');
   final JsonRpcProvider provider;
   final Felt contractAddress;
   final Account? account;
-  final Felt friTokenAddress;
+  final Felt strkTokenAddress;
 
-  /// Buys PIX tokens with FRI tokens.
+  /// Buys PIX tokens with STRK tokens.
   /// Corresponds to the `buy_pix` function in dpixou.cairo.
   /// This function now handles both approval and the buy_pix call.
-  Future<Result<void, Failure>> buyPix(BigInt amountFri) async {
+  Future<Result<void, Failure>> buyPix(BigInt amountStrk) async {
     if (account == null) {
       throw Exception('No account connected (wallet).');
     }
     logger
       ..info(
-        '[DpixouService] Attempting buyPix with amountFri: $amountFri (raw BigInt)',
+        '[DpixouService] Attempting buyPix with amountStrk: $amountStrk (raw BigInt)',
       )
       ..info(
         '[DpixouService] Account address: ${account!.accountAddress.toHexString()}',
@@ -79,32 +79,32 @@ class DpixouService with ContractDataUtilsMixin {
         '[DpixouService] Dpixou contract: ${contractAddress.toHexString()}',
       )
       ..info(
-        '[DpixouService] FRI token contract: ${friTokenAddress.toHexString()}',
+        '[DpixouService] STRK token contract: ${strkTokenAddress.toHexString()}',
       );
 
     return Result.guard(() async {
       try {
-        if (amountFri <= BigInt.zero) {
+        if (amountStrk <= BigInt.zero) {
           logger.severe(
-            '[DpixouService] Error: Amount FRI must be greater than 0.',
+            '[DpixouService] Error: Amount STRK must be greater than 0.',
           );
-          throw Exception('Amount FRI must be greater than 0');
+          throw Exception('Amount STRK must be greater than 0');
         }
 
         final calls = <FunctionCall>[
           FunctionCall(
-            contractAddress: friTokenAddress,
+            contractAddress: strkTokenAddress,
             entryPointSelector: getSelectorByName('approve'),
             calldata: [
               contractAddress, // spender: Dpixou contract
-              ...bigIntToU256FeltList(amountFri), // amount to approve
+              ...bigIntToU256FeltList(amountStrk), // amount to approve
             ],
           ),
           FunctionCall(
             contractAddress: contractAddress, // Dpixou contract
             entryPointSelector: getSelectorByName('buy_pix'),
             calldata: [
-              ...bigIntToU256FeltList(amountFri), // amount_fri for buy_pix
+              ...bigIntToU256FeltList(amountStrk), // amount_strk for buy_pix
             ],
           ),
         ];
@@ -183,41 +183,41 @@ class DpixouService with ContractDataUtilsMixin {
     final knownSelectors = {
       getSelectorByName('approve').toHexString(): 'approve',
       getSelectorByName('buy_pix').toHexString(): 'buy_pix',
-      getSelectorByName('get_nb_pix_for_fri').toHexString():
-          'get_nb_pix_for_fri',
-      getSelectorByName('get_nb_fri_for_pix').toHexString():
-          'get_nb_fri_for_pix',
+      getSelectorByName('get_nb_pix_for_strk').toHexString():
+          'get_nb_pix_for_strk',
+      getSelectorByName('get_nb_strk_for_pix').toHexString():
+          'get_nb_strk_for_pix',
     };
     return knownSelectors[selectorHex] ?? selectorHex;
   }
 
-  /// Estimates the fee for buying PIX tokens with FRI.
-  Future<FeeEstimations?> estimateBuyPixFee(BigInt amountFri) async {
-    if (amountFri <= BigInt.zero) {
+  /// Estimates the fee for buying PIX tokens with STRK.
+  Future<FeeEstimations?> estimateBuyPixFee(BigInt amountStrk) async {
+    if (amountStrk <= BigInt.zero) {
       return null;
     }
     logger
       ..info(
-        '[DpixouService] Estimating fee for amountFri: $amountFri',
+        '[DpixouService] Estimating fee for amountStrk: $amountStrk',
       )
       ..info(
-        '[DpixouService] Using FRI token: ${friTokenAddress.toHexString()} and Dpixou: ${contractAddress.toHexString()} for estimation',
+        '[DpixouService] Using STRK token: ${strkTokenAddress.toHexString()} and Dpixou: ${contractAddress.toHexString()} for estimation',
       );
     try {
       final calls = <FunctionCall>[
         FunctionCall(
-          contractAddress: friTokenAddress,
+          contractAddress: strkTokenAddress,
           entryPointSelector: getSelectorByName('approve'),
           calldata: [
             contractAddress, // spender: Dpixou contract
-            ...bigIntToU256FeltList(amountFri), // amount to approve
+            ...bigIntToU256FeltList(amountStrk), // amount to approve
           ],
         ),
         FunctionCall(
           contractAddress: contractAddress, // Dpixou contract
           entryPointSelector: getSelectorByName('buy_pix'),
           calldata: [
-            ...bigIntToU256FeltList(amountFri), // amount_fri for buy_pix
+            ...bigIntToU256FeltList(amountStrk), // amount_strk for buy_pix
           ],
         ),
       ];
@@ -233,31 +233,31 @@ class DpixouService with ContractDataUtilsMixin {
         '[DpixouService] Estimated fee result: maxFee=${feeEstimation.maxFee.toBigInt()}, unit=${feeEstimation.unit}',
       );
       return feeEstimation;
-    } catch (e) {
+    } catch (e, stack) {
       logger.severe(
-        '[DpixouService] Error in estimateBuyPixFee: $e',
+        '[DpixouService] Error in estimateBuyPixFee: $e\n$stack',
       );
       return null;
     }
   }
 
-  /// Gets the number of PIX tokens for a given amount of FRI tokens.
-  /// Corresponds to the `get_nb_pix_for_fri` function in dpixou.cairo.
-  Future<BigInt> getNbPixForFri(BigInt amountFri) async {
+  /// Gets the number of PIX tokens for a given amount of STRK tokens.
+  /// Corresponds to the `get_nb_pix_for_strk` function in dpixou.cairo.
+  Future<BigInt> getNbPixForStrk(BigInt amountStrk) async {
     try {
       logger.info(
-        'DpixouService.getNbPixForFri: Calling with amountFri: $amountFri',
+        'DpixouService.getNbPixForStrk: Calling with amountStrk: $amountStrk',
       );
       final functionCall = FunctionCall(
         contractAddress: contractAddress,
-        entryPointSelector: getSelectorByName('get_nb_pix_for_fri'),
+        entryPointSelector: getSelectorByName('get_nb_pix_for_strk'),
         calldata: [
-          ...bigIntToU256FeltList(amountFri),
+          ...bigIntToU256FeltList(amountStrk),
         ],
       );
 
       logger.info(
-        'DpixouService.getNbPixForFri: Prepared FunctionCall: ${functionCall.contractAddress.toHexString()} / ${functionCall.entryPointSelector.toHexString()} / Calldata count: ${functionCall.calldata.length}, First element: ${functionCall.calldata.isNotEmpty ? functionCall.calldata.first.toHexString() : 'N/A'}',
+        'DpixouService.getNbPixForStrk: Prepared FunctionCall: ${functionCall.contractAddress.toHexString()} / ${functionCall.entryPointSelector.toHexString()} / Calldata count: ${functionCall.calldata.length}, First element: ${functionCall.calldata.isNotEmpty ? functionCall.calldata.first.toHexString() : 'N/A'}',
       );
 
       final response = await provider.call(
@@ -265,70 +265,70 @@ class DpixouService with ContractDataUtilsMixin {
         blockId: BlockId.latest,
       );
       logger.info(
-        'DpixouService.getNbPixForFri: provider.call completed.',
+        'DpixouService.getNbPixForStrk: provider.call completed.',
       );
 
       final result = response.when(
         result: (data) {
           logger.info(
-            'DpixouService.getNbPixForFri: response.when -> result (List<Felt>): $data',
+            'DpixouService.getNbPixForStrk: response.when -> result (List<Felt>): $data',
           );
           if (data.isEmpty) {
             logger.severe(
-              'DpixouService.getNbPixForFri: Data is empty.',
+              'DpixouService.getNbPixForStrk: Data is empty.',
             );
             throw Exception(
-              'Empty response from get_nb_pix_for_fri (data was empty)',
+              'Empty response from get_nb_pix_for_strk (data was empty)',
             );
           }
           logger.info(
-            'DpixouService.getNbPixForFri: Data is NOT empty. First element (Felt): ${data.first.toHexString()}',
+            'DpixouService.getNbPixForStrk: Data is NOT empty. First element (Felt): ${data.first.toHexString()}',
           );
           return data;
         },
         error: (err) {
           logger.severe(
-            'DpixouService.getNbPixForFri: response.when -> error. Code: ${err.code}, Message: ${err.message}',
+            'DpixouService.getNbPixForStrk: response.when -> error. Code: ${err.code}, Message: ${err.message}',
           );
           throw Exception(
-            'Failed to get PIX for FRI (from .when error branch): Code: ${err.code}, Message: ${err.message}',
+            'Failed to get PIX for STRK (from .when error branch): Code: ${err.code}, Message: ${err.message}',
           );
         },
       );
       if (result.isEmpty) {
         logger.severe(
-          'DpixouService.getNbPixForFri: Result (after .when processing) is empty.',
+          'DpixouService.getNbPixForStrk: Result (after .when processing) is empty.',
         );
         throw Exception(
-          'Empty response from get_nb_pix_for_fri (result was empty post-when)',
+          'Empty response from get_nb_pix_for_strk (result was empty post-when)',
         );
       }
       logger.info(
-        'DpixouService.getNbPixForFri: Result (after .when processing) is NOT empty. First element (Felt): ${result.first.toHexString()}',
+        'DpixouService.getNbPixForStrk: Result (after .when processing) is NOT empty. First element (Felt): ${result.first.toHexString()}',
       );
       return result.first.toBigInt();
     } catch (e) {
-      if (e.toString().contains('Failed to get PIX for FRI')) {
+      if (e.toString().contains('Failed to get PIX for STRK')) {
         logger.severe(
-          'DpixouService.getNbPix_for_fri: Rethrowing specific error: $e',
+          'DpixouService.getNbPixForStrk: Rethrowing specific error: $e',
         );
         rethrow;
       }
       logger.severe(
-        'DpixouService.getNbPixForFri: Generic catch block: $e',
+        'DpixouService.getNbPixForStrk: Generic catch block: $e',
       );
-      throw Exception('Failed to get PIX for FRI (generic catch): $e');
+      throw Exception('Failed to get PIX for STRK (generic catch): $e');
     }
   }
 
-  /// Gets the number of FRI tokens for a given amount of PIX tokens.
-  /// Corresponds to the `get_nb_fri_for_pix` function in dpixou.cairo.
-  Future<BigInt> getNbFriForPix(BigInt amountPix) async {
+  /// Gets the number of STRK tokens for a given amount of PIX tokens.
+  /// Corresponds to the `get_nb_strk_for_pix` function in dpixou.cairo.
+  Future<BigInt> getNbStrkForPix(BigInt amountPix) async {
     try {
       final response = await provider.call(
         request: FunctionCall(
           contractAddress: contractAddress,
-          entryPointSelector: getSelectorByName('get_nb_fri_for_pix'),
+          entryPointSelector: getSelectorByName('get_nb_strk_for_pix'),
           calldata: [
             ...bigIntToU256FeltList(amountPix),
           ],
@@ -339,30 +339,30 @@ class DpixouService with ContractDataUtilsMixin {
       final result = response.when(
         result: (data) => data,
         error: (err) => throw Exception(
-          'Failed to get FRI for PIX: ${err.message}',
+          'Failed to get STRK for PIX: ${err.message}',
         ),
       );
 
       if (result.isEmpty) {
-        throw Exception('Empty response from get_nb_fri_for_pix');
+        throw Exception('Empty response from get_nb_strk_for_pix');
       }
       return result.first.toBigInt();
     } catch (e) {
       logger.severe(
-        'Error in getNbFriForPix: $e',
+        'Error in getNbStrkForPix: $e',
       );
-      throw Exception('Failed to get FRI for PIX: $e');
+      throw Exception('Failed to get STRK for PIX: $e');
     }
   }
 }
 
 final defaultDpixouService = DpixouService.defaultConfig();
 
-Future<Result<void, Failure>> buyPix(BigInt amountFri) =>
-    defaultDpixouService.buyPix(amountFri);
-Future<BigInt> getNbPixForFri(BigInt amountFri) =>
-    defaultDpixouService.getNbPixForFri(amountFri);
-Future<BigInt> getNbFriForPix(BigInt amountPix) =>
-    defaultDpixouService.getNbFriForPix(amountPix);
-Future<FeeEstimations?> estimateBuyPixFee(BigInt amountFri) =>
-    defaultDpixouService.estimateBuyPixFee(amountFri);
+Future<Result<void, Failure>> buyPix(BigInt amountStrk) =>
+    defaultDpixouService.buyPix(amountStrk);
+Future<BigInt> getNbPixForStrk(BigInt amountStrk) =>
+    defaultDpixouService.getNbPixForStrk(amountStrk);
+Future<BigInt> getNbStrkForPix(BigInt amountPix) =>
+    defaultDpixouService.getNbStrkForPix(amountPix);
+Future<FeeEstimations?> estimateBuyPixFee(BigInt amountStrk) =>
+    defaultDpixouService.estimateBuyPixFee(amountStrk);

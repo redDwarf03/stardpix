@@ -18,7 +18,7 @@ class CostAndFeeDisplay extends ConsumerWidget {
 
     if (selectedPixAmount == null ||
         selectedPixAmount! <= 0 ||
-        buyTokenForm.correspondingFriAmount == null) {
+        buyTokenForm.correspondingStrkAmount == null) {
       return const SizedBox.shrink();
     }
 
@@ -29,7 +29,7 @@ class CostAndFeeDisplay extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.only(top: 8, bottom: 4),
           child: Text(
-            'Cost: ${(buyTokenForm.correspondingFriAmount! / bigIntTenPow18).toStringAsFixed(0)} FRI for $selectedPixAmount PIX',
+            'Cost: ${(buyTokenForm.correspondingStrkAmount! / bigIntTenPow18).toStringAsFixed(0)} STRK for $selectedPixAmount PIX',
             style: textTheme.bodySmall?.copyWith(color: Colors.white70),
           ),
         ),

@@ -21,9 +21,9 @@ trait IPixToken<TContractState> {
 // Interface for Dpixou
 #[starknet::interface]
 trait IDpixou<TContractState> {
-    fn buy_pix(ref self: TContractState, amount_fri: u256);
-    fn get_nb_pix_for_fri(self: @TContractState, amount_fri: u256) -> u256;
-    fn get_nb_fri_for_pix(self: @TContractState, amount_pix: u256) -> u256;
+    fn buy_pix(ref self: TContractState, amount_strk: u256);
+    fn get_nb_pix_for_strk(self: @TContractState, amount_strk: u256) -> u256;
+    fn get_nb_strk_for_pix(self: @TContractState, amount_pix: u256) -> u256;
 }
 
 #[starknet::contract]
@@ -33,12 +33,9 @@ mod Dpixou {
     use super::{IPixTokenDispatcher, IPixTokenDispatcherTrait};
     use super::{IDpixou};
 
-    // 100 FRI for 1 PIX
-    const FRI_PER_PIX: u256 = 100_u256;
-
     #[storage]
     struct Storage {
-        fri_token: ContractAddress,
+        strk_token: ContractAddress,
         pix_token: ContractAddress,
     }
 
@@ -51,53 +48,61 @@ mod Dpixou {
     #[derive(Drop, starknet::Event)]
     struct PixBought {
         buyer: ContractAddress,
-        amount_fri: u256,
+        amount_strk: u256,
         amount_pix: u256,
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState, fri_token: ContractAddress, pix_token: ContractAddress) {
-        self.fri_token.write(fri_token);
+    fn constructor(ref self: ContractState, strk_token: ContractAddress, pix_token: ContractAddress) {
+        self.strk_token.write(strk_token);
         self.pix_token.write(pix_token);
     }
 
     #[abi(embed_v0)]
     impl DpixouImpl of IDpixou<ContractState> {
-        fn buy_pix(ref self: ContractState, amount_fri: u256) {
+        fn buy_pix(ref self: ContractState, amount_strk: u256) {
+            let ratio_num = 1_u256;
+            let ratio_den = 100_u256;
+
             let buyer = get_caller_address();
-            
+
             // Check that the amount is > 0
-            assert(amount_fri > 0_u256, 'Amount must be > 0');
+            assert(amount_strk > 0_u256, 'Amount STRK must be > 0');
 
-            // Calculate the number of PIX to receive
-            let amount_pix = amount_fri / FRI_PER_PIX;
-            assert(amount_pix > 0_u256, 'Not enough FRI');
+            // Calculate the number of PIX to receive: amount_pix = amount_strk * DEN / NUM
+            let amount_pix = (amount_strk * ratio_den) / ratio_num;
+            assert(amount_pix > 0_u256, 'Not enough STRK');
 
-            // Transfer FRI from the buyer to this contract
-            let fri_token_addr = self.fri_token.read();
-            IERC20Dispatcher { contract_address: fri_token_addr }.transferFrom(
+            // Transfer STRK from buyer to contract
+            let strk_token_addr = self.strk_token.read();
+            IERC20Dispatcher { contract_address: strk_token_addr }.transferFrom(
                 buyer, 
                 get_contract_address(),
-                amount_fri
+                amount_strk
             );
 
-            // Mint PIX for the buyer
+            // Mint PIX to buyer
             let pix_token_addr = self.pix_token.read();
             IPixTokenDispatcher { contract_address: pix_token_addr }.mint(
                 buyer,
                 amount_pix
             );
 
-            // Emit the event
-            self.emit(Event::PixBought(PixBought { buyer, amount_fri, amount_pix }));
+            // Emit event
+            self.emit(Event::PixBought(PixBought { buyer, amount_strk, amount_pix }));
         }
 
-        fn get_nb_pix_for_fri(self: @ContractState, amount_fri: u256) -> u256 {
-            amount_fri / FRI_PER_PIX
+
+        fn get_nb_pix_for_strk(self: @ContractState, amount_strk: u256) -> u256 {
+            let ratio_num = 1_u256;
+            let ratio_den = 100_u256;
+            (amount_strk * ratio_den) / ratio_num
         }
 
-        fn get_nb_fri_for_pix(self: @ContractState, amount_pix: u256) -> u256 {
-            amount_pix * FRI_PER_PIX
+        fn get_nb_strk_for_pix(self: @ContractState, amount_pix: u256) -> u256 {
+            let ratio_num = 1_u256;
+            let ratio_den = 100_u256;
+            (amount_pix * ratio_num) / ratio_den
         }
     }
 } 

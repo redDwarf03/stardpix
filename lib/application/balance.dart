@@ -66,19 +66,19 @@ Future<BigInt> userBalanceBigInt(Ref ref) async {
   }
 }
 
-/// Provider exposing the user's FRI balance as a BigInt (native units, 18 decimals).
+/// Provider exposing the user's STRK balance as a BigInt (native units, 18 decimals).
 @riverpod
-Future<BigInt> userFriBalanceBigInt(Ref ref) async {
+Future<BigInt> userStrkBalanceBigInt(Ref ref) async {
   final accountAddress = ref.watch(accountAddressProvider);
 
   if (accountAddress.isEmpty) {
     return BigInt.zero;
   }
 
-  final friTokenContractAddress = dotenv.env['FRI_TOKEN_CONTRACT_ADDRESS'];
+  final strkTokenContractAddress = dotenv.env['STRK_TOKEN_CONTRACT_ADDRESS'];
 
-  if (friTokenContractAddress == null) {
-    logger.severe('Error: FRI_TOKEN_CONTRACT_ADDRESS not found in .env file.');
+  if (strkTokenContractAddress == null) {
+    logger.severe('Error: STRK_TOKEN_CONTRACT_ADDRESS not found in .env file.');
     return BigInt.zero;
   }
 
@@ -86,11 +86,11 @@ Future<BigInt> userFriBalanceBigInt(Ref ref) async {
     final balanceRepository = BalanceRepositoryImpl.defaultConfig();
     final tokenBalanceBigInt = await balanceRepository.getBalanceBigInt(
       accountAddress,
-      friTokenContractAddress,
+      strkTokenContractAddress,
     );
     return tokenBalanceBigInt;
   } catch (e) {
-    logger.severe('Error fetching user FRI balance (BigInt): $e');
+    logger.severe('Error fetching user STRK balance (BigInt): $e');
     return BigInt.zero;
   }
 }

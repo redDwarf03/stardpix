@@ -16,4 +16,4 @@ starkli call --rpc $RPC_URL $PIXEL_WAR_ADDRESS get_pixel_color 10 20
 
 starkli balance --rpc $RPC_URL $ACCOUNT_ADDRESS
 
-starkli call "0x042c540c107fc91e38c865b47904989dd88506f9e49ef7fc32be755c77866590" get_nb_pix_for_fri u256:100 --rpc $RPC_URL
+starkli call "0x042c540c107fc91e38c865b47904989dd88506f9e49ef7fc32be755c77866590" get_nb_pix_for_strk u256:100 --rpc $RPC_URL

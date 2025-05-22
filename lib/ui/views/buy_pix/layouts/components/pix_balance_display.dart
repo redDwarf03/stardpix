@@ -16,15 +16,7 @@ class PixBalanceDisplay extends ConsumerWidget {
       tokenSymbol: 'PIX',
       decimalsToShow: 0,
       loadingText: 'Loading PIX balance...',
-      errorText: 'Error fetching PIX balance',
-      customFormattedText: (amount, symbol) {
-        final balanceInPixUnits = BigInt.tryParse(amount) ?? BigInt.zero;
-        if (balanceInPixUnits > BigInt.zero) {
-          return 'You already have $amount $symbol';
-        } else {
-          return "You don't have $symbol yet. It's time to change that!";
-        }
-      },
+      errorText: 'Could not load PIX balance',
     );
   }
 }

@@ -20,6 +20,19 @@ class WalletScreenState extends ConsumerState<WalletScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedAccount =
+        ref.watch(walletsProvider.select((value) => value.selectedAccount));
+    if (selectedAccount != null) {
+      ref.read(walletsProvider.notifier)
+        ..refreshEthBalance(
+          selectedAccount.walletId,
+          selectedAccount.id,
+        )
+        ..refreshStrkBalance(
+          selectedAccount.walletId,
+          selectedAccount.id,
+        );
+    }
     return Stack(
       children: [
         Container(
@@ -68,7 +81,6 @@ class WalletScreenState extends ConsumerState<WalletScreen> {
                       ],
                     ),
                     SizedBox(height: 10),
-                    SendEthButton(),
                     WalletErrorHandler(),
                   ],
                 ),

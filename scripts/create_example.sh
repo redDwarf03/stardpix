@@ -15,30 +15,30 @@ fi
 # For simplicity, assuming devnet-acct.json is in lib/application/contracts/ as well for this script.
 export ACCOUNT_FILE="devnet-acct.json"
 
-# Amount of FRI to spend to get 2 PIX (2 PIX * 100 FRI/PIX * 10^18)
-# 2 * 100 = 200 FRI. With 18 decimals: 200 * 10^18
-AMOUNT_FRI_TO_SPEND_FOR_2_PIX="u256:200000000000000000000"
+# Amount of STRK to spend to get 2 PIX (2 PIX * 0.01 STRK/PIX * 10^18)
+# 2 * 0.01 = 0.02 STRK. With 18 decimals: 0.02 * 10^18
+AMOUNT_STRK_TO_SPEND_FOR_2_PIX="u256:2000000000000000000"
 
-echo "Attempting to buy 2 PIX by spending $AMOUNT_FRI_TO_SPEND_FOR_2_PIX FRI..."
+echo "Attempting to buy 2 PIX by spending $AMOUNT_STRK_TO_SPEND_FOR_2_PIX STRK..."
 
-echo "1. Approving Dpixou contract ($DPIXOU_CONTRACT_ADDRESS) to spend $AMOUNT_FRI_TO_SPEND_FOR_2_PIX FRI from account $ACCOUNT_ADDRESS via token $FRI_TOKEN_CONTRACT_ADDRESS ..."
+echo "1. Approving Dpixou contract ($DPIXOU_CONTRACT_ADDRESS) to spend $AMOUNT_STRK_TO_SPEND_FOR_2_PIX STRK from account $ACCOUNT_ADDRESS via token $STRK_TOKEN_CONTRACT_ADDRESS ..."
 starkli invoke --watch --rpc "$RPC_URL" --account "$ACCOUNT_FILE" \
-  "$FRI_TOKEN_CONTRACT_ADDRESS" \
+  "$STRK_TOKEN_CONTRACT_ADDRESS" \
   approve \
   "$DPIXOU_CONTRACT_ADDRESS" \
-  $AMOUNT_FRI_TO_SPEND_FOR_2_PIX
+  $AMOUNT_STRK_TO_SPEND_FOR_2_PIX
 
 if [ $? -ne 0 ]; then
-    echo "FRI Approval for Dpixou failed. Exiting."
+    echo "STRK Approval for Dpixou failed. Exiting."
     exit 1
 fi
-echo "FRI Approval for Dpixou successful."
+echo "STRK Approval for Dpixou successful."
 
 echo "2. Calling buy_pix on Dpixou contract ($DPIXOU_CONTRACT_ADDRESS) to get PIX..."
 starkli invoke --watch --rpc "$RPC_URL" --account "$ACCOUNT_FILE" \
   "$DPIXOU_CONTRACT_ADDRESS" \
   buy_pix \
-  $AMOUNT_FRI_TO_SPEND_FOR_2_PIX
+  $AMOUNT_STRK_TO_SPEND_FOR_2_PIX
 
 if [ $? -ne 0 ]; then
     echo "buy_pix call failed. Exiting."

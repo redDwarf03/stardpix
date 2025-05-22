@@ -20,7 +20,7 @@ This project relies on specific versions of tools and libraries. While the `pubs
 
 The versions of core development tools are managed via the `.tool-versions` file (if you use a version manager like `asdf`):
 
-*   **Flutter**: `3.24.4-stable`
+*   **Flutter**: `3.27.4-stable`
 *   **Scarb (Cairo Package Manager)**: `2.9.4`
 *   **Starkli (StarkNet CLI)**: `0.3.5`
 *   **Starknet Devnet**: `0.2.0`
@@ -71,14 +71,12 @@ The application utilizes three main Cairo contracts:
     *   The metadata (name: "PIX Token", symbol: "PIX", decimals: 18) is set in the constructor.
     *   Source code: `lib/application/contracts/src/pix_token.cairo`
 
-3.  **`Dpixou.cairo`**: A contract that facilitates the exchange between a "FRI" token (another ERC20 token, typically representing a stablecoin or primary currency) and the `PIX` token.
-    *   Users can `buy_pix` by spending `FRI` tokens at a predefined rate (`FRI_PER_PIX`).
-    *   The contract interacts with both the `FRI` token contract (using `IERC20`) and the `PixToken` contract (using `IPixToken`).
+3.  **`Dpixou.cairo`**: A contract that facilitates the exchange between the `STRK` token (Starknet's native token) and the `PIX` token.
+    *   Users can `buy_pix` by spending `STRK` tokens at a predefined rate (`STRK_PER_PIX`).
+    *   The contract interacts with both the `STRK` token contract (using `IERC20`) and the `PixToken` contract (using `IPixToken`).
     *   After deployment, the `Dpixou` contract becomes the admin of the `PixToken` contract, granting it the exclusive right to call `mint` on `PixToken` when users purchase PIX.
-    *   Provides helper functions to calculate exchange rates (`get_nb_pix_for_fri`, `get_nb_fri_for_pix`).
+    *   Provides helper functions to calculate exchange rates (`get_nb_pix_for_strk`, `get_nb_strk_for_pix`).
     *   Source code: `lib/application/contracts/src/dpixou.cairo`
-
-A `FRI Token` is also deployed, which is another instance of the `PixToken.cairo` contract, configured to act as the currency for buying `PIX` tokens.
 
 ### Cairo Code and Compilation
 
@@ -95,12 +93,11 @@ This script performs the following actions:
 1.  **Declares** each contract class (`PixToken`, `Dpixou`, `PixelWar`) to the StarkNet network using `starkli declare`.
 2.  **Deploys** instances of these contracts:
     *   `PixToken`: Deploys the main `PIX` token with an initial supply of 0. The deploying account is temporarily set as admin.
-    *   `FRI Token`: Deploys another instance of `PixToken` to serve as the `FRI` currency.
-    *   `Dpixou`: Deploys the exchange contract, linking it to the deployed `FRI Token` and `PixToken` addresses.
+    *   `Dpixou`: Deploys the exchange contract, linking it to the Starknet `STRK` token and the deployed `PixToken` addresses.
     *   `PixelWar`: Deploys the main game contract, providing it with the address of the deployed `PixToken` contract for pixel payment processing.
 3.  **Transfers `PixToken` Admin Rights**: The script then calls the `change_admin` function on the deployed `PixToken` contract to transfer the administrative (minting) rights to the deployed `Dpixou` contract address. This ensures that only `Dpixou` can mint new `PIX` tokens.
 4.  **Outputs** the addresses of all deployed contracts to the terminal.
-5.  **Creates/Updates** an `.env` file located at `lib/application/contracts/.env`. This file stores the deployed contract addresses and other essential configuration details. **Crucially, the `RPC_URL` in this `.env` file is the primary source of truth for the Flutter application to connect to the StarkNet network.** Account details (address and private key for the devnet deployer) are also stored here.
+5.  **Creates/Updates** an `.env` file located at `lib/application/contracts/.env`. This file stores the deployed contract addresses (`PIX_TOKEN_CONTRACT_ADDRESS`, `DPIXOU_CONTRACT_ADDRESS`, `PIXELWAR_CONTRACT_ADDRESS`), the `STRK_TOKEN_CONTRACT_ADDRESS` (for the Starknet STRK token), and other essential configuration details. **Crucially, the `RPC_URL` in this `.env` file is the primary source of truth for the Flutter application to connect to the StarkNet network.** Account details (address and private key for the devnet deployer) are also stored here.
 
 Detailed steps for running the deployment script are covered in the "Deployment and Setup" section.
 
@@ -224,28 +221,28 @@ This service is responsible for all interactions with the `PixelWar` smart contr
 
 ### 2. `DpixouService.dart`
 
-This service manages interactions with the `Dpixou` smart contract, which handles the exchange of `FRI` tokens for `PIX` tokens.
+This service manages interactions with the `Dpixou` smart contract, which handles the exchange of `STRK` tokens for `PIX` tokens.
 
 *   **Location**: `lib/application/services/dpixou_service.dart`
 *   **Initialization**:
-    *   Similar to `PixelWarService`, `DpixouService.defaultConfig()` loads `DPIXOU_CONTRACT_ADDRESS` and other necessary details from the `.env` file.
+    *   Similar to `PixelWarService`, `DpixouService.defaultConfig()` loads `DPIXOU_CONTRACT_ADDRESS`, `STRK_TOKEN_CONTRACT_ADDRESS`, and other necessary details from the `.env` file.
 *   **Key Functionalities**:
-    *   `Future<Result<void, Failure>> buyPix(BigInt amountFri)`:
-        *   First, it calls an internal helper `_approveFri` to approve the `Dpixou` contract to spend the required `amountFri` from the user's FRI token balance. This involves an `approve` call to the FRI token contract.
+    *   `Future<Result<void, Failure>> buyPix(BigInt amountStrk)`:
+        *   First, it calls an internal helper to approve the `Dpixou` contract to spend the required `amountStrk` from the user's STRK token balance. This involves an `approve` call to the STRK token contract.
         *   After successful approval, it calls the `buy_pix` external function on the `Dpixou` contract.
         *   The service prepares these two calls (`approve` and `buy_pix`) as a list of `FunctionCall` objects and executes them as a single multi-call transaction using `account.execute`.
         *   It handles the transaction execution and waits for its acceptance.
-    *   `Future<EstimateFeeResponse> estimateBuyPixFee(BigInt amountFri)`:
-        *   Prepares the same list of `FunctionCall` objects (for `approve` FRI and `buy_pix`) as the `buyPix` method.
+    *   `Future<EstimateFeeResponse> estimateBuyPixFee(BigInt amountStrk)`:
+        *   Prepares the same list of `FunctionCall` objects (for `approve` STRK and `buy_pix`) as the `buyPix` method.
         *   Calls `account.estimateFee` (or a similar method on the `Account` object from `starknet.dart`) to estimate the network fees for executing these calls.
         *   Returns the fee estimation, allowing the UI to display potential transaction costs to the user.
-    *   `Future<BigInt> getNbPixForFri(BigInt amountFri)`: Calls the `get_nb_pix_for_fri` view function to calculate how many PIX tokens would be received for a given `amountFri`.
+    *   `Future<BigInt> getNbPixForStrk(BigInt amountStrk)`: Calls the `get_nb_pix_for_strk` view function to calculate how many PIX tokens would be received for a given `amountStrk`.
 
 These services provide a clean abstraction layer, making it easier for the Flutter UI and application logic to interact with the StarkNet backend without dealing directly with the low-level details of contract calls and data serialization.
 
 ### 3. Balance Management (`balance.repository.dart` & `balance.dart`)
 
-The application includes components to fetch and display user token balances, covering `PIX` tokens (for gameplay), `FRI` tokens (for purchasing PIX), and `ETH` (for network transaction fees).
+The application includes components to fetch and display user token balances, covering `PIX` tokens (for gameplay), `STRK` tokens (for purchasing PIX), and `ETH` (for network transaction fees).
 
 *   **Domain Layer (`lib/domain/repositories/balance.repository.dart`)**:
     *   Defines an abstract `BalanceRepository` interface with methods like:
@@ -270,10 +267,10 @@ The application includes components to fetch and display user token balances, co
 *   **Application Layer (`lib/application/balance.dart`)**:
     *   Several Riverpod providers are defined to make user balances easily accessible:
         *   `userPixBalanceBigIntProvider` (or similarly named, e.g., `userBalanceBigIntProvider`): Fetches the user's `PIX` token balance as a `BigInt` using `BalanceRepositoryImpl`.
-        *   `userFriBalanceBigIntProvider`: Fetches the user's `FRI` token balance as a `BigInt`.
+        *   `userStrkBalanceBigIntProvider`: Fetches the user's `STRK` token balance as a `BigInt`.
         *   `userEthBalanceBigIntProvider`: Fetches the user's `ETH` balance as a `BigInt`.
     *   These providers watch the current user's `accountAddress` from a session provider.
-    *   They retrieve necessary token contract addresses (like `PIX_TOKEN_CONTRACT_ADDRESS`, `FRI_TOKEN_CONTRACT_ADDRESS`) from the `.env` file via their respective service configurations or directly within the repository.
+    *   They retrieve necessary token contract addresses (like `PIX_TOKEN_CONTRACT_ADDRESS`, `STRK_TOKEN_CONTRACT_ADDRESS`) from the `.env` file via their respective service configurations or directly within the repository.
     *   They include error handling and return `BigInt.zero` if necessary information is missing or if fetching fails.
     *   An older provider `userBalanceProvider` (returning `int` for PIX) might exist but preference should be given to the `BigInt` based providers for accuracy and consistency.
 
@@ -324,9 +321,10 @@ In another terminal window, from the root of your `starDPix` project:
     ./scripts/deploy_sc.sh
     ```
     This script will:
-    *   Declare and deploy the `PixToken`, `FRI Token` (another instance of PixToken), `Dpixou`, and `PixelWar` contracts to your local devnet.
+    *   Declare and deploy the `PixToken`, `Dpixou`, and `PixelWar` contracts to your local devnet.
+    *   The `STRK` token on Starknet devnet (with seed 0) is typically predeployed at address `0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d`. The script configures `Dpixou` to use this address.
     *   Display the deployed contract addresses in the terminal.
-    *   Create/update a `.env` file located at `lib/application/contracts/.env`. This file will contain the deployed contract addresses and the `RPC_URL` (e.g., `http://YOUR_COMPUTER_IP_ADDRESS:5050` if you're testing on a device, or `http://localhost:5050` if testing only on the host machine and your devnet is started accordingly).
+    *   Create/update a `.env` file located at `lib/application/contracts/.env`. This file will contain the deployed contract addresses, the `STRK_TOKEN_CONTRACT_ADDRESS`, and the `RPC_URL` (e.g., `http://YOUR_COMPUTER_IP_ADDRESS:5050` if you're testing on a device, or `http://localhost:5050` if testing only on the host machine and your devnet is started accordingly).
     *   **Important for ETH Balance**: Ensure this script (or you manually) adds the `ETH_TOKEN_CONTRACT_ADDRESS` for your StarkNet network to the `.env` file. This address is required for the application to display the user's ETH balance, which is used for transaction fees.
 
 ### 4. Configure Flutter Environment
@@ -439,14 +437,14 @@ For direct command-line interaction and testing of the core contract functionali
 
 This script demonstrates a full workflow:
 1.  Sources contract addresses and RPC configuration from `lib/application/contracts/.env`.
-2.  Purchases `PIX` tokens by interacting with the `Dpixou` contract (which involves approving `Dpixou` to spend `FRI` tokens and then calling `buy_pix`).
+2.  Purchases `PIX` tokens by interacting with the `Dpixou` contract (which involves approving `Dpixou` to spend `STRK` tokens and then calling `buy_pix`).
 3.  Approves the `PixelWar` contract to spend the newly acquired `PIX` tokens.
 4.  Calls the `add_pixels` function on the `PixelWar` contract to place a predefined set of pixels.
 
 **Prerequisites for running `create_example.sh`:**
 *   Ensure you have successfully run `scripts/deploy_sc.sh` at least once to deploy the contracts and create the `lib/application/contracts/.env` file.
 *   The `devnet-acct.json` file (specified by `ACCOUNT_FILE` in the script) should exist, typically in `lib/application/contracts/` as created by `deploy_sc.sh`.
-*   The account specified in `.env` and `devnet-acct.json` must have sufficient `FRI` tokens to purchase the `PIX` tokens needed by the script.
+*   The account specified in `.env` and `devnet-acct.json` must have sufficient `STRK` tokens (minted by the devnet or `deploy_sc.sh`) to purchase the `PIX` tokens needed by the script.
 
 **To run the script:**
 

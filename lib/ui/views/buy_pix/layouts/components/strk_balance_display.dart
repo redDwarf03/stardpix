@@ -4,8 +4,8 @@ import 'package:stardpix/application/balance.dart';
 import 'package:stardpix/application/constants.dart';
 import 'package:stardpix/ui/views/buy_pix/layouts/components/token_balance_display.dart';
 
-class FriBalanceDisplay extends ConsumerWidget {
-  const FriBalanceDisplay({
+class StrkBalanceDisplay extends ConsumerWidget {
+  const StrkBalanceDisplay({
     super.key,
     required this.textTheme,
     required this.selectedPixAmount,
@@ -17,28 +17,28 @@ class FriBalanceDisplay extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userFriBalanceAsyncValue = ref.watch(userFriBalanceBigIntProvider);
+    final userStrkBalanceAsyncValue = ref.watch(userStrkBalanceBigIntProvider);
     const pixPurchaseOptions = [1, 2, 5, 10, 20, 40, 50, 75, 100];
 
-    return userFriBalanceAsyncValue.when(
-      data: (friBalanceBigInt) {
-        final friBalanceDouble =
-            friBalanceBigInt.toDouble() / bigIntTenPow18.toDouble();
-        final maxPixBuyable = (friBalanceDouble / friPerPixRate).floor();
+    return userStrkBalanceAsyncValue.when(
+      data: (strkBalanceBigInt) {
+        final strkBalanceDouble =
+            strkBalanceBigInt.toDouble() / bigIntTenPow18.toDouble();
+        final maxPixBuyable = (strkBalanceDouble / strkPerPixRate).floor();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TokenBalanceDisplay(
-              balanceAsyncValue: userFriBalanceAsyncValue,
-              tokenSymbol: 'FRI',
-              loadingText: 'Loading FRI balance...',
-              errorText: 'Error fetching FRI balance',
+              balanceAsyncValue: userStrkBalanceAsyncValue,
+              tokenSymbol: 'STRK',
+              loadingText: 'Loading STRK balance...',
+              errorText: 'Error fetching STRK balance',
             ),
             const SizedBox(height: 35),
             if (maxPixBuyable <= 0) ...[
               Text(
-                'You do not have enough FRI to buy PIX. Current FRI Balance: ${friBalanceDouble.toStringAsFixed(2)}',
+                'You do not have enough STRK to buy PIX.',
                 style:
                     textTheme.bodyMedium?.copyWith(color: Colors.yellowAccent),
               ),
@@ -89,10 +89,10 @@ class FriBalanceDisplay extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TokenBalanceDisplay(
-            balanceAsyncValue: userFriBalanceAsyncValue,
-            tokenSymbol: 'FRI',
-            loadingText: 'Loading FRI balance...',
-            errorText: 'Error fetching FRI balance',
+            balanceAsyncValue: userStrkBalanceAsyncValue,
+            tokenSymbol: 'STRK',
+            loadingText: 'Loading STRK balance...',
+            errorText: 'Error fetching STRK balance',
           ),
           const SizedBox(height: 15),
           Row(
@@ -118,10 +118,10 @@ class FriBalanceDisplay extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TokenBalanceDisplay(
-            balanceAsyncValue: userFriBalanceAsyncValue,
-            tokenSymbol: 'FRI',
-            loadingText: 'Loading FRI balance...',
-            errorText: 'Error fetching FRI balance',
+            balanceAsyncValue: userStrkBalanceAsyncValue,
+            tokenSymbol: 'STRK',
+            loadingText: 'Loading STRK balance...',
+            errorText: 'Error fetching STRK balance',
           ),
           const SizedBox(height: 15),
           Text(

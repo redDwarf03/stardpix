@@ -10,7 +10,7 @@ class BuyTokenFormState with _$BuyTokenFormState {
     @Default(false) bool walletValidationInProgress,
     FeeEstimations? estimatedFee,
     int? selectedPixAmount,
-    BigInt? correspondingFriAmount,
+    BigInt? correspondingStrkAmount,
     @Default(false) bool isLoadingFee,
   }) = _BuyTokenFormState;
   const BuyTokenFormState._();

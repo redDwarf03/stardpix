@@ -34,7 +34,7 @@ class BuyTokenFormNotifier extends AutoDisposeNotifier<BuyTokenFormState> {
     if (pixAmount <= 0) {
       state = state.copyWith(
         selectedPixAmount: null,
-        correspondingFriAmount: null,
+        correspondingStrkAmount: null,
         estimatedFee: null,
         error: 'Please select a valid amount of PIX',
         isLoadingFee: false,
@@ -42,12 +42,12 @@ class BuyTokenFormNotifier extends AutoDisposeNotifier<BuyTokenFormState> {
       return;
     }
 
-    final friCostForPixBase = BigInt.from(pixAmount * 100);
-    final friCostForPixWithDecimals = friCostForPixBase * bigIntTenPow18;
+    final strkCostForPixBase = BigInt.from(pixAmount * 100);
+    final strkCostForPixWithDecimals = strkCostForPixBase * bigIntTenPow18;
 
     state = state.copyWith(
       selectedPixAmount: pixAmount,
-      correspondingFriAmount: friCostForPixWithDecimals,
+      correspondingStrkAmount: strkCostForPixWithDecimals,
       estimatedFee: null,
       error: null,
       isLoadingFee: true,
@@ -68,8 +68,8 @@ class BuyTokenFormNotifier extends AutoDisposeNotifier<BuyTokenFormState> {
       // Get the .env infos for the contract addresses
       const contractAddressStr =
           String.fromEnvironment('DPIXOU_CONTRACT_ADDRESS');
-      const friTokenAddressStr =
-          String.fromEnvironment('FRI_TOKEN_CONTRACT_ADDRESS');
+      const strkTokenAddressStrEnv =
+          String.fromEnvironment('STRK_TOKEN_CONTRACT_ADDRESS');
       const rpcUrlStr = String.fromEnvironment('RPC_URL');
 
       // Fallback if String.fromEnvironment doesn't work (dev)
@@ -77,13 +77,13 @@ class BuyTokenFormNotifier extends AutoDisposeNotifier<BuyTokenFormState> {
       final contractAddress = contractAddressStr.isNotEmpty
           ? contractAddressStr
           : env['DPIXOU_CONTRACT_ADDRESS'] ?? '';
-      final friTokenAddress = friTokenAddressStr.isNotEmpty
-          ? friTokenAddressStr
-          : env['FRI_TOKEN_CONTRACT_ADDRESS'] ?? '';
+      final strkTokenAddress = strkTokenAddressStrEnv.isNotEmpty
+          ? strkTokenAddressStrEnv
+          : env['STRK_TOKEN_CONTRACT_ADDRESS'] ?? '';
       final rpcUrl = rpcUrlStr.isNotEmpty ? rpcUrlStr : env['RPC_URL'] ?? '';
 
       if (contractAddress.isEmpty ||
-          friTokenAddress.isEmpty ||
+          strkTokenAddress.isEmpty ||
           rpcUrl.isEmpty) {
         state = state.copyWith(
           estimatedFee: null,
@@ -97,8 +97,8 @@ class BuyTokenFormNotifier extends AutoDisposeNotifier<BuyTokenFormState> {
         provider: JsonRpcProvider(nodeUri: Uri.parse(rpcUrl)),
         contractAddressStr: contractAddress,
         account: selectedAccount,
-        friTokenAddressStr: friTokenAddress,
-      ).estimateBuyPixFee(friCostForPixWithDecimals);
+        strkTokenAddressStr: strkTokenAddress,
+      ).estimateBuyPixFee(strkCostForPixWithDecimals);
       if (state.selectedPixAmount == pixAmount) {
         state =
             state.copyWith(estimatedFee: fee, isLoadingFee: false, error: null);
@@ -120,7 +120,7 @@ class BuyTokenFormNotifier extends AutoDisposeNotifier<BuyTokenFormState> {
   Future<bool> buy(BuildContext context, WidgetRef ref) async {
     if (state.selectedPixAmount == null ||
         state.selectedPixAmount! <= 0 ||
-        state.correspondingFriAmount == null) {
+        state.correspondingStrkAmount == null) {
       state = state.copyWith(
         error: 'Please select a valid amount of PIX to buy',
         walletValidationInProgress: false,
@@ -143,8 +143,8 @@ class BuyTokenFormNotifier extends AutoDisposeNotifier<BuyTokenFormState> {
     // Get the .env infos for the contract addresses
     const contractAddressStr =
         String.fromEnvironment('DPIXOU_CONTRACT_ADDRESS');
-    const friTokenAddressStr =
-        String.fromEnvironment('FRI_TOKEN_CONTRACT_ADDRESS');
+    const strkTokenAddressStrEnv =
+        String.fromEnvironment('STRK_TOKEN_CONTRACT_ADDRESS');
     const rpcUrlStr = String.fromEnvironment('RPC_URL');
 
     // Fallback if String.fromEnvironment doesn't work (dev)
@@ -152,12 +152,12 @@ class BuyTokenFormNotifier extends AutoDisposeNotifier<BuyTokenFormState> {
     final contractAddress = contractAddressStr.isNotEmpty
         ? contractAddressStr
         : env['DPIXOU_CONTRACT_ADDRESS'] ?? '';
-    final friTokenAddress = friTokenAddressStr.isNotEmpty
-        ? friTokenAddressStr
-        : env['FRI_TOKEN_CONTRACT_ADDRESS'] ?? '';
+    final strkTokenAddress = strkTokenAddressStrEnv.isNotEmpty
+        ? strkTokenAddressStrEnv
+        : env['STRK_TOKEN_CONTRACT_ADDRESS'] ?? '';
     final rpcUrl = rpcUrlStr.isNotEmpty ? rpcUrlStr : env['RPC_URL'] ?? '';
 
-    if (contractAddress.isEmpty || friTokenAddress.isEmpty || rpcUrl.isEmpty) {
+    if (contractAddress.isEmpty || strkTokenAddress.isEmpty || rpcUrl.isEmpty) {
       state = state.copyWith(
         walletValidationInProgress: false,
         error: 'Missing configuration for the contracts or the RPC.',
@@ -169,23 +169,23 @@ class BuyTokenFormNotifier extends AutoDisposeNotifier<BuyTokenFormState> {
       provider: JsonRpcProvider(nodeUri: Uri.parse(rpcUrl)),
       contractAddressStr: contractAddress,
       account: accountAsync,
-      friTokenAddressStr: friTokenAddress,
+      strkTokenAddressStr: strkTokenAddress,
     );
 
     final result = await dpixouService.buyPix(
-      state.correspondingFriAmount!,
+      state.correspondingStrkAmount!,
     );
 
     return result.map(
       success: (success) async {
         ref
           ..invalidate(userBalanceBigIntProvider)
-          ..invalidate(userFriBalanceBigIntProvider);
+          ..invalidate(userStrkBalanceBigIntProvider);
         state = state.copyWith(
           walletValidationInProgress: false,
           estimatedFee: null,
           selectedPixAmount: null,
-          correspondingFriAmount: null,
+          correspondingStrkAmount: null,
           error: null,
         );
         return true;

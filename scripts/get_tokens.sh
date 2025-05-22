@@ -15,7 +15,6 @@ else
     exit 1
 fi
 
-ACCOUNT_FILE="devnet-acct.json"
 
 # Use argument if provided, else from .env
 if [ -n "$1" ]; then
@@ -32,12 +31,32 @@ echo "Minting 1 ETH to $ACCOUNT_ADDRESS on devnet..."
 curl -X POST "$RPC_URL/mint" \
   -H "Content-Type: application/json" \
   -d "{\"address\": \"$ACCOUNT_ADDRESS\", \"amount\": 1000000000000000000}"
+echo # for newline
 
-echo "Minting 1000 FRI tokens to $ACCOUNT_ADDRESS..."
-starkli invoke --watch --rpc "$RPC_URL" --account "$ACCOUNT_FILE" \
-  "$FRI_TOKEN_CONTRACT_ADDRESS" \
-  mint \
-  "$ACCOUNT_ADDRESS" \
-  u256:1000000000000000000000
+echo "Minting 1000 STRK (as FRI) tokens to $ACCOUNT_ADDRESS..."
+curl -X POST "$RPC_URL/mint" \
+  -H "Content-Type: application/json" \
+  -d "{\"address\": \"$ACCOUNT_ADDRESS\", \"amount\": 1000000000000000000000}"
+echo # for newline
+
+
+# Mint 1 ETH to the account for devnet fees
+echo ""
+echo "Minting 1 ETH to the account for devnet fees..."
+curl -X POST "$RPC_URL/mint" \
+  -H "Content-Type: application/json" \
+  -d "{\"address\": \"$ACCOUNT_ADDRESS\", \"amount\": 1000000000000000000}"
+echo "1 ETH minted to $ACCOUNT_ADDRESS"
+echo # for newline
+
+# Mint some STRK to the account for testing Dpixou
+echo ""
+echo "Minting 1000 STRK to the account for testing Dpixou..."
+curl -X POST "$RPC_URL/mint" \
+  -H "Content-Type: application/json" \
+  -d "{\"address\": \"$ACCOUNT_ADDRESS\", \"amount\": 1000000000000000000000, \"unit\": \"FRI\"}"
+echo ""
+echo "1000 STRK minted to $ACCOUNT_ADDRESS (using unit FRI)"
+echo # for newline
 
 echo "Done."

@@ -35,6 +35,15 @@ class BalanceRepositoryImpl implements BalanceRepository {
     String accountAddress,
     String tokenContractAddress,
   ) async {
+    if (accountAddress.isEmpty) {
+      logger.severe('Error: accountAddress is empty.');
+      throw ArgumentError('Account address cannot be empty.');
+    }
+    if (tokenContractAddress.isEmpty) {
+      logger.severe('Error: tokenContractAddress is empty.');
+      throw ArgumentError('Token contract address cannot be empty.');
+    }
+
     try {
       final response = await provider.call(
         request: FunctionCall(
@@ -69,10 +78,14 @@ class BalanceRepositoryImpl implements BalanceRepository {
       );
     } catch (e) {
       logger.severe(
-        'Exception in getBalanceBigInt for $tokenContractAddress: $e',
+        'Exception in getBalanceBigInt for token $tokenContractAddress and account $accountAddress: $e',
       );
+
+      if (e is Exception) {
+        rethrow;
+      }
       throw Exception(
-        'Failed to fetch balance for $tokenContractAddress due to: $e',
+        'Failed to process balance for $tokenContractAddress due to: $e',
       );
     }
   }

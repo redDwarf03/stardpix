@@ -41,26 +41,27 @@ final userBalanceBigIntProvider = AutoDisposeFutureProvider<BigInt>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef UserBalanceBigIntRef = AutoDisposeFutureProviderRef<BigInt>;
-String _$userFriBalanceBigIntHash() =>
-    r'84e24fc40f7edd3a370bd5247df605d51b4b12a6';
+String _$userStrkBalanceBigIntHash() =>
+    r'9de34eb56d318f426fce5ce1de55eb5da03d17b0';
 
-/// Provider exposing the user's FRI balance as a BigInt (native units, 18 decimals).
+/// Provider exposing the user's STRK balance as a BigInt (native units, 18 decimals).
 ///
-/// Copied from [userFriBalanceBigInt].
-@ProviderFor(userFriBalanceBigInt)
-final userFriBalanceBigIntProvider = AutoDisposeFutureProvider<BigInt>.internal(
-  userFriBalanceBigInt,
-  name: r'userFriBalanceBigIntProvider',
+/// Copied from [userStrkBalanceBigInt].
+@ProviderFor(userStrkBalanceBigInt)
+final userStrkBalanceBigIntProvider =
+    AutoDisposeFutureProvider<BigInt>.internal(
+  userStrkBalanceBigInt,
+  name: r'userStrkBalanceBigIntProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$userFriBalanceBigIntHash,
+      : _$userStrkBalanceBigIntHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef UserFriBalanceBigIntRef = AutoDisposeFutureProviderRef<BigInt>;
+typedef UserStrkBalanceBigIntRef = AutoDisposeFutureProviderRef<BigInt>;
 String _$userEthBalanceBigIntHash() =>
     r'14980c29e7fe8b048f0841051709fba9401ec95f';
 

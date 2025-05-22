@@ -18,7 +18,6 @@ import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_large_pi
 import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_pick.dart';
 import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_pixel_validation.dart';
 import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_pixel_validation_cancel.dart';
-import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_quick_draw.dart';
 import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_refresh.dart';
 import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_timer.dart';
 import 'package:stardpix/ui/views/layer/layouts/components/buttons/icon_wallet.dart';
@@ -181,7 +180,7 @@ class MainScreenState extends ConsumerState<MainScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const IconQuickDraw(),
+                //const IconQuickDraw(),
                 const IconEdit(),
                 const IconLargePixel(),
                 const IconTimer(),
