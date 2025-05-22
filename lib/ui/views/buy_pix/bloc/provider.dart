@@ -42,8 +42,9 @@ class BuyTokenFormNotifier extends AutoDisposeNotifier<BuyTokenFormState> {
       return;
     }
 
-    final strkCostForPixBase = BigInt.from(pixAmount * 100);
-    final strkCostForPixWithDecimals = strkCostForPixBase * bigIntTenPow18;
+    final strkCostForPixWithDecimals = strkPerPixRate > 0
+        ? (BigInt.from(pixAmount) * bigIntTenPow18) ~/ BigInt.from(100)
+        : BigInt.zero;
 
     state = state.copyWith(
       selectedPixAmount: pixAmount,

@@ -150,7 +150,7 @@ starDPix uses [wallet_kit](https://pub.dev/packages/wallet_kit) to manage the fu
 
 ## Advanced SecureStore Management and Application Lifecycle
 
-Recent changes have been implemented to optimize and secure the management of `SecureStore` (used by `wallet_kit` to store sensitive wallet information).
+
 
 ### SecureStore Caching with `secureStoreProvider`
 

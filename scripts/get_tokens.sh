@@ -33,22 +33,6 @@ curl -X POST "$RPC_URL/mint" \
   -d "{\"address\": \"$ACCOUNT_ADDRESS\", \"amount\": 1000000000000000000}"
 echo # for newline
 
-echo "Minting 1000 STRK (as FRI) tokens to $ACCOUNT_ADDRESS..."
-curl -X POST "$RPC_URL/mint" \
-  -H "Content-Type: application/json" \
-  -d "{\"address\": \"$ACCOUNT_ADDRESS\", \"amount\": 1000000000000000000000}"
-echo # for newline
-
-
-# Mint 1 ETH to the account for devnet fees
-echo ""
-echo "Minting 1 ETH to the account for devnet fees..."
-curl -X POST "$RPC_URL/mint" \
-  -H "Content-Type: application/json" \
-  -d "{\"address\": \"$ACCOUNT_ADDRESS\", \"amount\": 1000000000000000000}"
-echo "1 ETH minted to $ACCOUNT_ADDRESS"
-echo # for newline
-
 # Mint some STRK to the account for testing Dpixou
 echo ""
 echo "Minting 1000 STRK to the account for testing Dpixou..."

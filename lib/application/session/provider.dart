@@ -10,6 +10,12 @@ final isConnectedProvider = Provider<bool>((ref) {
   return selectedAccount != null;
 });
 
+/// Provider that exposes the deployment status from wallet_kit
+final isDeployedProvider = Provider<bool>((ref) {
+  final selectedAccount = ref.watch(selectedAccountProvider);
+  return selectedAccount != null && selectedAccount.isDeployed;
+});
+
 /// Provider that exposes the connected account address (or empty string)
 final accountAddressProvider = Provider<String>((ref) {
   final selectedAccount = ref.watch(selectedAccountProvider);

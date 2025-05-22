@@ -15,16 +15,14 @@ class IconBuy extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userPixBalanceAsyncValue = ref.watch(userBalanceBigIntProvider);
     final isConnected = ref.watch(isConnectedProvider);
+    final isDeployed = ref.watch(isDeployedProvider);
     final layer = ref.watch(LayerFormProvider.layerForm);
 
     return Stack(
       clipBehavior: Clip.none,
       children: [
         IconButton(
-          tooltip: isConnected
-              ? 'Get PIX tokens to play'
-              : 'Connect wallet to buy PIX Tokens',
-          onPressed: isConnected == false
+          onPressed: isConnected == false || isDeployed == false
               ? null
               : () {
                   ref
@@ -51,7 +49,7 @@ class IconBuy extends ConsumerWidget {
                 Icon(
                   pixelarticons.Pixel.briefcaseplus,
                   size: 24,
-                  color: isConnected
+                  color: isConnected && isDeployed
                       ? Colors.orange[900]
                       : Colors.orange[900]!.withValues(alpha: 0.2),
                 ),
@@ -59,7 +57,7 @@ class IconBuy extends ConsumerWidget {
                   'Buy',
                   style: TextStyle(
                     fontSize: 8,
-                    color: isConnected
+                    color: isConnected && isDeployed
                         ? Colors.orange[900]
                         : Colors.orange[900]!.withValues(alpha: 0.2),
                   ),

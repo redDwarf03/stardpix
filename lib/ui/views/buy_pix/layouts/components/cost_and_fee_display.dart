@@ -29,7 +29,7 @@ class CostAndFeeDisplay extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.only(top: 8, bottom: 4),
           child: Text(
-            'Cost: ${(buyTokenForm.correspondingStrkAmount! / bigIntTenPow18).toStringAsFixed(0)} STRK for $selectedPixAmount PIX',
+            'Cost: ${(buyTokenForm.correspondingStrkAmount! / bigIntTenPow18).toStringAsFixed(2)} STRK for $selectedPixAmount PIX',
             style: textTheme.bodySmall?.copyWith(color: Colors.white70),
           ),
         ),
