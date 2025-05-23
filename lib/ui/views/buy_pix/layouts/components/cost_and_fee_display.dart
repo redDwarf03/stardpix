@@ -59,7 +59,7 @@ class CostAndFeeDisplay extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: Text(
-              'Network Fee: ${(buyTokenForm.estimatedFee!.maxFee.toBigInt() / bigIntTenPow18).toStringAsFixed(6)} ${buyTokenForm.estimatedFee!.unit.toLowerCase() == 'wei' ? 'ETH' : buyTokenForm.estimatedFee!.unit.toUpperCase()}',
+              'Network Fee: ${(buyTokenForm.estimatedFee!.maxFee.toBigInt() / bigIntTenPow18).toStringAsFixed(10)} ${buyTokenForm.estimatedFee!.unit.toLowerCase() == 'wei' ? 'ETH' : buyTokenForm.estimatedFee!.unit.toUpperCase()}',
               style: textTheme.bodySmall?.copyWith(color: Colors.amber[200]),
             ),
           ),

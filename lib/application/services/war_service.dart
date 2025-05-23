@@ -224,8 +224,8 @@ class PixelWarService with ContractDataUtilsMixin {
         'Account ETH balance ${account!.accountAddress.toHexString()}: $ethBalance wei',
       );
 
-      // Arbitrary threshold of 0.01 ETH (1e16 wei)
-      if (ethBalance < BigInt.from(10).pow(16)) {
+      // Arbitrary threshold of 0.0001 ETH (1e12 wei)
+      if (ethBalance < BigInt.from(10).pow(12)) {
         throw Exception(
           'ETH balance too low to pay fees (balance: $ethBalance wei)',
         );
