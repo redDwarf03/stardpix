@@ -3,3 +3,4 @@ nodejs 21.2.0
 scarb 2.9.4
 starkli 0.3.5
 starknet-devnet 0.2.0
+starknet-foundry 0.43.1

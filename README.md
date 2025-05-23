@@ -327,6 +327,30 @@ In another terminal window, from the root of your `starDPix` project:
     *   Create/update a `.env` file located at `lib/application/contracts/.env`. This file will contain the deployed contract addresses, the `STRK_TOKEN_CONTRACT_ADDRESS`, and the `RPC_URL` (e.g., `http://YOUR_COMPUTER_IP_ADDRESS:5050` if you're testing on a device, or `http://localhost:5050` if testing only on the host machine and your devnet is started accordingly).
     *   **Important for ETH Balance**: Ensure this script (or you manually) adds the `ETH_TOKEN_CONTRACT_ADDRESS` for your StarkNet network to the `.env` file. This address is required for the application to display the user's ETH balance, which is used for transaction fees.
 
+### 3b. Deploying to StarkNet Sepolia Testnet (Alternative)
+
+If you want to deploy to the StarkNet Sepolia testnet instead of a local devnet, use the `scripts/deploy_sc_sepolia.sh` script.
+
+1.  **Make the Sepolia deployment script executable:**
+    ```bash
+    chmod +x scripts/deploy_sc_sepolia.sh
+    ```
+2.  **Run the Sepolia deployment script:**
+    ```bash
+    ./scripts/deploy_sc_sepolia.sh
+    ```
+    This script will:
+    *   Prompt you for your Sepolia testnet account address, private key, and account JSON file.
+    *   Prompt for the RPC URL, STRK token address, ETH token address, and Account Class Hash, with defaults provided for Sepolia testnet.
+    *   Declare and deploy the `PixToken`, `Dpixou`, and `PixelWar` contracts to the StarkNet Sepolia testnet using the provided credentials and configuration.
+    *   **Important**: This script will ask for confirmation before **overwriting** the existing `lib/application/contracts/.env` file with the Sepolia testnet configuration.
+    *   **Funding**: You will need Sepolia ETH in your account for transaction fees and Sepolia STRK if you intend to test `buy_pix` functionality. You can obtain these from a StarkNet Sepolia faucet (e.g., [https://starknet-faucet.vercel.app/](https://starknet-faucet.vercel.app/)).
+
+**Switching between Devnet and Sepolia Testnet:**
+*   Running `./scripts/deploy_sc.sh` configures the `.env` file for **local devnet**.
+*   Running `./scripts/deploy_sc_sepolia.sh` configures the `.env` file for **StarkNet Sepolia Testnet**.
+*   The Flutter application always loads its configuration from `lib/application/contracts/.env`. Therefore, to switch environments, simply re-run the appropriate deployment script.
+
 ### 4. Configure Flutter Environment
 
 The Flutter application uses the `.env` file (generated in the previous step) to get the contract addresses and other StarkNet-related configurations.
@@ -409,7 +433,7 @@ If you want to run and test the Flutter application on a physical Android device
         ```bash
         export RPC_URL="http://192.168.1.100:5050"
         ```
-    *   If you are only testing on an emulator that can access `localhost` of the host machine (e.g., Android emulator's special `10.0.2.2` address dificuldades by `localhost` from host), or only on the host, you might use `http://localhost:5050`. However, for consistency and to simplify physical device testing, using your computer's actual local IP is recommended.
+    *   If you are only testing on an emulator that can access `localhost` from host), or only on the host, you might use `http://localhost:5050`. However, for consistency and to simplify physical device testing, using your computer's actual local IP is recommended.
 
 4.  **Run the Deployment Script:**
     After configuring the `RPC_URL` in `deploy_sc.sh` and ensuring your devnet is running and accessible, execute the script from the project root:
