@@ -17,7 +17,7 @@ export ACCOUNT_FILE="devnet-acct.json"
 
 # Amount of STRK to spend to get 2 PIX (2 PIX * 0.01 STRK/PIX * 10^18)
 # 2 * 0.01 = 0.02 STRK. With 18 decimals: 0.02 * 10^18
-AMOUNT_STRK_TO_SPEND_FOR_2_PIX="u256:2000000000000000000"
+AMOUNT_STRK_TO_SPEND_FOR_2_PIX="u256:23000000000000000000"
 
 echo "Attempting to buy 2 PIX by spending $AMOUNT_STRK_TO_SPEND_FOR_2_PIX STRK..."
 
@@ -48,7 +48,7 @@ echo "buy_pix call successful. Should now have 2 additional PIX."
 
 # Amount to approve for PixelWar to spend (2 PIX, as we are adding 2 pixels)
 # 1 PIX = 1000000000000000000 (u256)
-AMOUNT_PIX_TO_APPROVE_FOR_PIXELWAR="u256:2000000000000000000"
+AMOUNT_PIX_TO_APPROVE_FOR_PIXELWAR="u256:23000000000000000000"
 
 echo "Approving PixelWar contract ($PIXELWAR_CONTRACT_ADDRESS) to spend $AMOUNT_PIX_TO_APPROVE_FOR_PIXELWAR PIX from account $ACCOUNT_ADDRESS via token $PIX_TOKEN_CONTRACT_ADDRESS ..."
 starkli invoke --watch --rpc "$RPC_URL" --account "$ACCOUNT_FILE" \
@@ -66,7 +66,8 @@ echo "PIX Approval for PixelWar successful. Placing pixels using add_pixels..."
 
 # Calldata for Array<Pixel>: [array_len, x1, y1, color1, x2, y2, color2, ...]
 # Adding 2 pixels: (10, 20, 0x1234) and (10, 21, 0x1234)
-PIXELS_CALLDATA="2 10 20 0x1234 10 21 0x1234"
+PIXELS_CALLDATA="23 4 9 0x990000 5 9 0xCC0000 6 9 0xCC0000 7 9 0x990000 4 10 0xCC0000 5 10 0xCC0000 6 10 0xCC0000 7 10 0xCC0000 5 11 0x990000 6 11 0x990000 7 7 0x006600 6 6 0x006600 5 5 0x006600 4 4 0x00CC00 7 8 0x006600 8 9 0x990000 9 9 0xCC0000 10 9 0xCC0000 9 10 0xCC0000 10 10 0xCC0000 11 10 0x990000 8 10 0xCC0000 9 11 0x990000"
+
 
 starkli invoke --watch --rpc "$RPC_URL" --account "$ACCOUNT_FILE" \
   "$PIXELWAR_CONTRACT_ADDRESS" \
