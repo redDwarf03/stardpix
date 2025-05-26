@@ -28,6 +28,9 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         
+      - name: Create .env file
+        run: echo "${{ secrets.DOTENV_FILE_TESTNET }}" > .env
+        
       - name: Flutter pub get
         run: flutter pub get
 
