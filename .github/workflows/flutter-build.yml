@@ -23,8 +23,10 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17'
-          cache: 'gradle'
+          java-version: '19'
+        
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
         
       - name: Flutter pub get
         run: flutter pub get
