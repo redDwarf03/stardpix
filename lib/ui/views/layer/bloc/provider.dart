@@ -120,6 +120,10 @@ class LayerFormNotifier extends AutoDisposeNotifier<LayerFormState> {
   }
 
   void setIsBuyProcess(bool isBuyProcess, WidgetRef ref) {
+    ref
+      ..invalidate(userBalanceProvider)
+      ..invalidate(userBalanceBigIntProvider)
+      ..invalidate(userStrkBalanceBigIntProvider);
     if (isBuyProcess == true) {
       state = state.copyWith(
         isBuyProcess: isBuyProcess,
@@ -137,6 +141,10 @@ class LayerFormNotifier extends AutoDisposeNotifier<LayerFormState> {
   }
 
   void setIsWalletProcess(bool isWalletProcess, WidgetRef ref) {
+    ref
+      ..invalidate(userBalanceProvider)
+      ..invalidate(userBalanceBigIntProvider)
+      ..invalidate(userStrkBalanceBigIntProvider);
     if (isWalletProcess == true) {
       state = state.copyWith(
         isWalletProcess: isWalletProcess,

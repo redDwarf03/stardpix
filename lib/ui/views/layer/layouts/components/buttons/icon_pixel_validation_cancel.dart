@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pixelarticons/pixel.dart' as pixelarticons;
+import 'package:stardpix/application/balance.dart';
 import 'package:stardpix/ui/views/layer/bloc/provider.dart';
 
 class IconPixelValicationCancel extends ConsumerWidget {
@@ -23,6 +24,11 @@ class IconPixelValicationCancel extends ConsumerWidget {
             await ref
                 .read(LayerFormProvider.layerForm.notifier)
                 .cancelValidation(ref);
+
+            ref
+              ..invalidate(userBalanceProvider)
+              ..invalidate(userBalanceBigIntProvider)
+              ..invalidate(userStrkBalanceBigIntProvider);
           },
           icon: Container(
             height: 42,

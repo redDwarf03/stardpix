@@ -86,6 +86,11 @@ class IconPixelValidation extends ConsumerWidget {
                 await ref
                     .read(LayerFormProvider.layerForm.notifier)
                     .getTimeLockInSeconds(context);
+
+                ref
+                  ..invalidate(userBalanceProvider)
+                  ..invalidate(userBalanceBigIntProvider)
+                  ..invalidate(userStrkBalanceBigIntProvider);
               },
               failure: (failure) {
                 ScaffoldMessenger.of(context).showSnackBar(
